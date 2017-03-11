@@ -1,0 +1,17 @@
+{
+  "name": "swc-data",
+  "version": "1.0.0",
+  "description": "Management of data volumes.  Migration and backup.",
+  "author": "Patrick Edson <pedson@leapscientific.com>",
+  "license": "Janelia",
+  "dependencies": {
+    "pg": "^6.1.4",
+    "sequelize": "^3.30.2",
+    "typescript": "^2.2.1",
+    "uuid": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^7.0.8",
+    "@types/sequelize": "^4.0.44"
+  }
+}
