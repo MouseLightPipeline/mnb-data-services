@@ -2,43 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="bb247cd3-ff1e-49c5-a931-db4ff9e0090c" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.dockerignore" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/typescript-compiler.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Dockerfile" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/backup.sh" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/migrate.sh" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/package.json" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/sample/.dockerignore" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/sample/config/config.json" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/sample/fixtures/mouse-brain-areas.json" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/sample/migrations/20170310223354-initialize.ts" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/sample/models/index.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/sample/models/index.ts" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/sample/package.json" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/sample/seeders/20170310235851-initialize.ts" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/sample/tsconfig.json" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/sample/yarn.lock" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/seed.sh" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/swc/.dockerignore" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/swc/config/config.json" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/swc/migrations/20170310223354-initialize.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/swc/migrations/20170310223354-initialize.js.map" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/swc/migrations/20170310223354-initialize.ts" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/swc/models/index.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/swc/package.json" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/swc/seeders/20170311033337-initialize.ts" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/swc/tsconfig.json" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/swc/yarn.lock" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/transform/.dockerignore" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/transform/config/config.json" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/transform/migrations/20170310223354-initialize.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/transform/migrations/20170310223354-initialize.js.map" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/transform/migrations/20170310223354-initialize.ts" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/transform/models/index.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/transform/package.json" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/transform/tsconfig.json" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/transform/yarn.lock" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/README.md" afterPath="$PROJECT_DIR$/README.md" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Dockerfile" afterPath="$PROJECT_DIR$/Dockerfile" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -99,18 +65,28 @@
       <file leaf-file-name="Dockerfile" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Dockerfile">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="150">
-              <caret line="10" column="25" lean-forward="false" selection-start-line="10" selection-start-column="25" selection-end-line="10" selection-end-column="25" />
+            <state relative-caret-position="30">
+              <caret line="2" column="13" lean-forward="true" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="package.json" pinned="false" current-in-tab="true">
+      <file leaf-file-name=".gitignore" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/.gitignore">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="210">
+              <caret line="14" column="0" lean-forward="true" selection-start-line="14" selection-start-column="0" selection-end-line="14" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="package.json" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/package.json">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="15" column="0" lean-forward="false" selection-start-line="13" selection-start-column="0" selection-end-line="15" selection-end-column="0" />
+            <state relative-caret-position="300">
+              <caret line="20" column="0" lean-forward="true" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -141,16 +117,6 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="0">
               <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="20170310235851-initialize.ts" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sample/seeders/20170310235851-initialize.ts">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="150">
-              <caret line="10" column="91" lean-forward="false" selection-start-line="10" selection-start-column="91" selection-end-line="10" selection-end-column="91" />
               <folding />
             </state>
           </provider>
@@ -209,10 +175,11 @@
         <option value="$PROJECT_DIR$/sample/migrations/20170310223354-initialize.ts" />
         <option value="$PROJECT_DIR$/transform/migrations/20170310223354-initialize.ts" />
         <option value="$PROJECT_DIR$/package.json" />
-        <option value="$PROJECT_DIR$/Dockerfile" />
         <option value="$PROJECT_DIR$/sample/package.json" />
         <option value="$PROJECT_DIR$/swc/package.json" />
         <option value="$PROJECT_DIR$/transform/package.json" />
+        <option value="$PROJECT_DIR$/Dockerfile" />
+        <option value="$PROJECT_DIR$/.gitignore" />
       </list>
     </option>
   </component>
@@ -662,12 +629,12 @@
       <workItem from="1489189571391" duration="1219000" />
       <workItem from="1489190821876" duration="276000" />
       <workItem from="1489191101505" duration="718000" />
-      <workItem from="1489191839805" duration="9591000" />
+      <workItem from="1489191839805" duration="10193000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="16249000" />
+    <option name="totallyTimeSpent" value="16851000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="2560" height="1332" extended-state="6" />
@@ -718,7 +685,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/sample/seeders/20170310235851-initialize.ts" />
     <entry file="file://$PROJECT_DIR$/sample/models/index.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="315">
@@ -1086,14 +1052,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Dockerfile">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="150">
-          <caret line="10" column="25" lean-forward="false" selection-start-line="10" selection-start-column="25" selection-end-line="10" selection-end-column="25" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sample/package.json">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="90">
@@ -1120,8 +1078,24 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/package.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="0" lean-forward="false" selection-start-line="13" selection-start-column="0" selection-end-line="15" selection-end-column="0" />
+        <state relative-caret-position="300">
+          <caret line="20" column="0" lean-forward="true" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Dockerfile">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="2" column="13" lean-forward="true" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="14" column="0" lean-forward="true" selection-start-line="14" selection-start-column="0" selection-end-line="14" selection-end-column="0" />
           <folding />
         </state>
       </provider>
