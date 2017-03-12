@@ -10,7 +10,7 @@ export = {
                     type: Sequelize.UUID,
                     defaultValue: Sequelize.UUIDV4
                 },
-                janeliaTracingId: Sequelize.UUID,
+                swcTracingId: Sequelize.UUID,
                 registrationTransformId: Sequelize.UUID,
                 createdAt: Sequelize.DATE,
                 updatedAt: Sequelize.DATE,
