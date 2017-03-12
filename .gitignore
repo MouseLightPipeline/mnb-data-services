@@ -13,6 +13,6 @@ npm-debug.log*
 
 node_modules
 
-.js
-.js.map
+*.js
+*.js.map
 
