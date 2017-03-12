@@ -160,6 +160,13 @@ export = {
                         model: "InjectionViruses",
                         key: "id"
                     }
+                },
+                sampleId: {
+                    type: Sequelize.UUID,
+                    references: {
+                        model: "Samples",
+                        key: "id"
+                    }
                 }
             });
 
@@ -198,6 +205,13 @@ export = {
                 createdAt: Sequelize.DATE,
                 updatedAt: Sequelize.DATE,
                 deletedAt: Sequelize.DATE,
+                brainAreaId: {
+                    type: Sequelize.UUID,
+                    references: {
+                        model: "BrainAreas",
+                        key: "id"
+                    }
+                },
                 injectionId: {
                     type: Sequelize.UUID,
                     references: {
