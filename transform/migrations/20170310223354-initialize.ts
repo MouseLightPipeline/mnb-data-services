@@ -31,6 +31,7 @@ export = {
                 z: Sequelize.DOUBLE,
                 radius: Sequelize.DOUBLE,
                 parentNumber: Sequelize.INTEGER,
+                swcNodeId: Sequelize.UUID,
                 tracingId: {
                     type: Sequelize.UUID,
                     references: {
