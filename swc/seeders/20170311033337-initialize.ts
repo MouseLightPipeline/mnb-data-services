@@ -36,7 +36,7 @@ function loadStructureIdentifiers(when: Date) {
     return [
         {
             id: uuid.v4(),
-            name: "undefined",
+            name: "path",
             swcName: "undefined",
             value: 0,
             mutable: false,
