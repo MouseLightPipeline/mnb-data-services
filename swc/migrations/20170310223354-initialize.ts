@@ -11,6 +11,7 @@ export = {
                     defaultValue: Sequelize.UUIDV4
                 },
                 name: Sequelize.TEXT,
+                swcName: Sequelize.TEXT,
                 value: Sequelize.INTEGER,
                 mutable: {type: Sequelize.BOOLEAN, defaultValue: true},
                 createdAt: Sequelize.DATE,
@@ -27,6 +28,7 @@ export = {
                     defaultValue: Sequelize.UUIDV4
                 },
                 name: Sequelize.TEXT,
+                value: Sequelize.INTEGER,
                 createdAt: Sequelize.DATE,
                 updatedAt: Sequelize.DATE,
                 deletedAt: Sequelize.DATE

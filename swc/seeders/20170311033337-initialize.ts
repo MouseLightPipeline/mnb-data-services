@@ -1,15 +1,15 @@
-const uuid = require('uuid');
+const uuid = require("uuid");
 
 export = {
     up: async(queryInterface, Sequelize) => {
         const when = new Date();
 
-        await queryInterface.bulkInsert('StructureIdentifiers', loadStructureIdentifiers(when), {});
-        await queryInterface.bulkInsert('TracingStructures', loadTracingStructures(when), {});
+        await queryInterface.bulkInsert("StructureIdentifiers", loadStructureIdentifiers(when), {});
+        await queryInterface.bulkInsert("TracingStructures", loadTracingStructures(when), {});
     },
 
     down: function (queryInterface, Sequelize) {
-        return queryInterface.bulkDelete('BrainAreas', null, {});
+        return queryInterface.bulkDelete("BrainAreas", null, {});
     }
 };
 
@@ -17,13 +17,15 @@ function loadTracingStructures(when: Date) {
     return [
         {
             id: uuid.v4(),
-            name: 'axon',
+            name: "axon",
+            value: 1,
             updatedAt: when,
             createdAt: when
         },
         {
             id: uuid.v4(),
-            name: 'dendrite',
+            name: "dendrite",
+            value: 2,
             updatedAt: when,
             createdAt: when
         }
@@ -34,7 +36,8 @@ function loadStructureIdentifiers(when: Date) {
     return [
         {
             id: uuid.v4(),
-            name: 'undefined',
+            name: "undefined",
+            swcName: "undefined",
             value: 0,
             mutable: false,
             updatedAt: when,
@@ -42,7 +45,8 @@ function loadStructureIdentifiers(when: Date) {
         },
         {
             id: uuid.v4(),
-            name: 'soma',
+            name: "soma",
+            swcName: "soma",
             value: 1,
             mutable: false,
             updatedAt: when,
@@ -50,7 +54,8 @@ function loadStructureIdentifiers(when: Date) {
         },
         {
             id: uuid.v4(),
-            name: 'axon',
+            name: "axon",
+            swcName: "axon",
             value: 2,
             mutable: false,
             updatedAt: when,
@@ -58,7 +63,8 @@ function loadStructureIdentifiers(when: Date) {
         },
         {
             id: uuid.v4(),
-            name: '(basal) dendrite',
+            name: "(basal) dendrite",
+            swcName: "(basal) dendrite",
             value: 3,
             mutable: false,
             updatedAt: when,
@@ -66,7 +72,8 @@ function loadStructureIdentifiers(when: Date) {
         },
         {
             id: uuid.v4(),
-            name: 'apical dendrite',
+            name: "apical dendrite",
+            swcName: "apical dendrite",
             value: 4,
             mutable: false,
             updatedAt: when,
@@ -74,7 +81,8 @@ function loadStructureIdentifiers(when: Date) {
         },
         {
             id: uuid.v4(),
-            name: 'fork point',
+            name: "fork point",
+            swcName: "branch",
             value: 5,
             mutable: false,
             updatedAt: when,
@@ -82,7 +90,8 @@ function loadStructureIdentifiers(when: Date) {
         },
         {
             id: uuid.v4(),
-            name: 'end point',
+            name: "end point",
+            swcName: "end",
             value: 6,
             mutable: false,
             updatedAt: when,

@@ -12,6 +12,7 @@ export = {
                 },
                 swcTracingId: Sequelize.UUID,
                 registrationTransformId: Sequelize.UUID,
+                transformedAt:Sequelize.DATE,
                 createdAt: Sequelize.DATE,
                 updatedAt: Sequelize.DATE,
                 deletedAt: Sequelize.DATE
