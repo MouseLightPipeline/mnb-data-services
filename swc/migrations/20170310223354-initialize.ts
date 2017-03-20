@@ -1,5 +1,3 @@
-"use strict";
-
 export = {
     up: async(queryInterface, Sequelize) => {
         await queryInterface.createTable(
@@ -35,7 +33,7 @@ export = {
             });
 
         await queryInterface.createTable(
-            "Tracings",
+            "SwcTracings",
             {
                 id: {
                     primaryKey: true,
@@ -81,8 +79,12 @@ export = {
                 deletedAt: Sequelize.DATE
             });
 
+        await queryInterface.addIndex("SwcTracings", ["annotator"]);
+        await queryInterface.addIndex("SwcTracings", ["neuronId"]);
+        await queryInterface.addIndex("SwcTracings", ["tracingStructureId"]);
+
         await queryInterface.createTable(
-            "TracingNodes",
+            "SwcTracingNodes",
             {
                 id: {
                     primaryKey: true,
@@ -90,11 +92,11 @@ export = {
                     defaultValue: Sequelize.UUIDV4
                 },
                 sampleNumber: Sequelize.INTEGER,
+                parentNumber: Sequelize.INTEGER,
                 x: Sequelize.DOUBLE,
                 y: Sequelize.DOUBLE,
                 z: Sequelize.DOUBLE,
                 radius: Sequelize.DOUBLE,
-                parentNumber: Sequelize.INTEGER,
                 structureIdentifierId: {
                     type: Sequelize.UUID,
                     references: {
@@ -102,10 +104,10 @@ export = {
                         key: "id"
                     }
                 },
-                tracingId: {
+                swcTracingId: {
                     type: Sequelize.UUID,
                     references: {
-                        model: "Tracings",
+                        model: "SwcTracings",
                         key: "id"
                     }
                 },
@@ -113,11 +115,15 @@ export = {
                 updatedAt: Sequelize.DATE,
                 deletedAt: Sequelize.DATE
             });
+
+        await queryInterface.addIndex("SwcTracingNodes", ["sampleNumber"]);
+        await queryInterface.addIndex("SwcTracingNodes", ["swcTracingId"]);
+        await queryInterface.addIndex("SwcTracingNodes", ["structureIdentifierId"]);
     },
 
     down: async(queryInterface, Sequelize) => {
-        await queryInterface.dropTable("TracingNodes");
-        await queryInterface.dropTable("Tracings");
+        await queryInterface.dropTable("SwcTracingNodes");
+        await queryInterface.dropTable("SwcTracings");
         await queryInterface.dropTable("TracingStructures");
         await queryInterface.dropTable("StructureIdentifiers");
     }

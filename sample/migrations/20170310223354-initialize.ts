@@ -1,5 +1,3 @@
-"use strict";
-
 export = {
     up: async(queryInterface, Sequelize) => {
         await queryInterface.createTable(
@@ -68,6 +66,9 @@ export = {
                 deletedAt: Sequelize.DATE
             });
 
+        await queryInterface.addIndex("BrainAreas", ["depth"]);
+        await queryInterface.addIndex("BrainAreas", ["parentStructureId"]);
+
         await queryInterface.createTable(
             "Samples",
             {
@@ -80,7 +81,7 @@ export = {
                     type: Sequelize.INTEGER,
                     defaultValue: -1
                 },
-                animalId: Sequelize.STRING,
+                animalId: Sequelize.TEXT,
                 tag: {
                     type: Sequelize.TEXT,
                     defaultValue: ''
@@ -106,6 +107,8 @@ export = {
                 deletedAt: Sequelize.DATE
             });
 
+        await queryInterface.addIndex("Samples", ["mouseStrainId"]);
+
         await queryInterface.createTable(
             "RegistrationTransforms",
             {
@@ -128,6 +131,8 @@ export = {
                     }
                 }
             });
+
+        await queryInterface.addIndex("RegistrationTransforms", ["sampleId"]);
 
         await queryInterface.createTable(
             "Injections",
@@ -169,6 +174,10 @@ export = {
                     }
                 }
             });
+
+        await queryInterface.addIndex("Injections", ["fluorophoreId"]);
+        await queryInterface.addIndex("Injections", ["injectionVirusId"]);
+        await queryInterface.addIndex("Injections", ["sampleId"]);
 
         await queryInterface.createTable(
             "Neurons",
@@ -220,6 +229,9 @@ export = {
                     }
                 }
             });
+
+        await queryInterface.addIndex("Neurons", ["brainAreaId"]);
+        await queryInterface.addIndex("Neurons", ["injectionId"]);
     },
 
     down: async(queryInterface, Sequelize) => {
