@@ -39,6 +39,7 @@ RUN cd /apps/swc; tsc
 RUN cd /apps/transform; yarn install
 RUN cd /apps/transform; tsc
 
+RUN cd /apps/backups; yarn install
 RUN cd /apps/backups; tsc
 
 CMD ["/apps/backup.sh"]
