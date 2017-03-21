@@ -6,7 +6,7 @@
     "sourceMap": true
   },
   "include": [
-    "./backup.ts"
+    "./**/*.ts"
   ],
   "exclude": [
     "node_modules"
