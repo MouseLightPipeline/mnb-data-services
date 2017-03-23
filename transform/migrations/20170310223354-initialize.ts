@@ -1,9 +1,10 @@
-"use strict";
+const TracingsTable = "Tracings";
+const TracingNodesTable = "TracingNodes";
 
 export = {
     up: async (queryInterface, Sequelize) => {
         await queryInterface.createTable(
-            "Tracings",
+            TracingsTable,
             {
                 id: {
                     primaryKey: true,
@@ -19,12 +20,12 @@ export = {
                 deletedAt: Sequelize.DATE
             });
 
-        await queryInterface.addIndex("Tracings", ["swcTracingId"]);
-        await queryInterface.addIndex("Tracings", ["registrationTransformId"]);
-        await queryInterface.addIndex("Tracings", ["tracingStructureId"]);
+        await queryInterface.addIndex(TracingsTable, ["swcTracingId"]);
+        await queryInterface.addIndex(TracingsTable, ["registrationTransformId"]);
+        await queryInterface.addIndex(TracingsTable, ["tracingStructureId"]);
 
         await queryInterface.createTable(
-            "TracingNodes",
+            TracingNodesTable,
             {
                 id: {
                     primaryKey: true,
@@ -44,7 +45,7 @@ export = {
                 tracingId: {
                     type: Sequelize.UUID,
                     references: {
-                        model: "Tracings",
+                        model: TracingsTable,
                         key: "id"
                     }
                 },
@@ -53,13 +54,13 @@ export = {
                 deletedAt: Sequelize.DATE
             });
 
-        await queryInterface.addIndex("TracingNodes", ["tracingId"]);
-        await queryInterface.addIndex("TracingNodes", ["brainAreaId"]);
-        await queryInterface.addIndex("TracingNodes", ["structureIdentifierId"]);
+        await queryInterface.addIndex(TracingNodesTable, ["tracingId"]);
+        await queryInterface.addIndex(TracingNodesTable, ["brainAreaId"]);
+        await queryInterface.addIndex(TracingNodesTable, ["structureIdentifierId"]);
     },
 
     down: async (queryInterface, Sequelize) => {
-        await queryInterface.dropTable("TracingNodes");
-        await queryInterface.dropTable("Tracings");
+        await queryInterface.dropTable(TracingNodesTable);
+        await queryInterface.dropTable(TracingsTable);
     }
 };
