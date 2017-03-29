@@ -1,4 +1,5 @@
 const TracingsTable = "Tracings";
+const TracingNodesTable = "TracingNodes";
 const BrainCompartmentContentsTable = "BrainCompartmentContents";
 
 export = {
@@ -25,8 +26,7 @@ export = {
                     }
                 },
                 createdAt: Sequelize.DATE,
-                updatedAt: Sequelize.DATE,
-                deletedAt: Sequelize.DATE
+                updatedAt: Sequelize.DATE
             });
 
         await queryInterface.addIndex(BrainCompartmentContentsTable, ["tracingId"]);
@@ -39,6 +39,9 @@ export = {
         await queryInterface.addColumn(TracingsTable, "pathCount", Sequelize.INTEGER);
         await queryInterface.addColumn(TracingsTable, "branchCount", Sequelize.INTEGER);
         await queryInterface.addColumn(TracingsTable, "endCount", Sequelize.INTEGER);
+
+        await queryInterface.removeColumn(TracingsTable, "deletedAt");
+        await queryInterface.removeColumn(TracingNodesTable, "deletedAt");
     },
 
     down: async (queryInterface, Sequelize) => {
