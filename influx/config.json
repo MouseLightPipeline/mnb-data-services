@@ -1,0 +1,14 @@
+{
+  "development": {
+    "host": "localhost",
+    "port": "8086"
+  },
+  "test": {
+    "host": "metrics-db",
+    "port": "8086"
+  },
+  "production": {
+    "host": "metrics-db",
+    "port": "8086"
+  }
+}

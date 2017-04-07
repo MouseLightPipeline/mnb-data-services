@@ -1,0 +1,9 @@
+{
+  "name": "influx",
+  "version": "1.0.0",
+  "main": "migrate.js",
+  "license": "MIT",
+  "dependencies": {
+    "influx": "^5.0.6"
+  }
+}

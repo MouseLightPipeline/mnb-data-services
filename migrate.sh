@@ -10,3 +10,6 @@ sequelize db:migrate
 
 cd "../transform"
 sequelize db:migrate
+
+cd "../influx"
+node migrate.js

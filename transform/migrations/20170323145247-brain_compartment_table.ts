@@ -15,6 +15,7 @@ export = {
                 },
                 brainAreaId: Sequelize.UUID,
                 nodeCount: Sequelize.INTEGER,
+                somaCount: Sequelize.INTEGER,
                 pathCount: Sequelize.INTEGER,
                 branchCount: Sequelize.INTEGER,
                 endCount: Sequelize.INTEGER,
@@ -31,6 +32,7 @@ export = {
 
         await queryInterface.addIndex(BrainCompartmentContentsTable, ["tracingId"]);
         await queryInterface.addIndex(BrainCompartmentContentsTable, ["nodeCount"]);
+        await queryInterface.addIndex(BrainCompartmentContentsTable, ["somaCount"]);
         await queryInterface.addIndex(BrainCompartmentContentsTable, ["pathCount"]);
         await queryInterface.addIndex(BrainCompartmentContentsTable, ["branchCount"]);
         await queryInterface.addIndex(BrainCompartmentContentsTable, ["endCount"]);
