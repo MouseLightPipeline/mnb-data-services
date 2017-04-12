@@ -53,5 +53,8 @@ export = {
         await queryInterface.removeColumn(TracingsTable, "pathCount");
         await queryInterface.removeColumn(TracingsTable, "branchCount");
         await queryInterface.removeColumn(TracingsTable, "endCount");
+
+        await queryInterface.addColumn(TracingsTable, "deletedAt");
+        await queryInterface.addColumn(TracingNodesTable, "deletedAt");
     }
 }
