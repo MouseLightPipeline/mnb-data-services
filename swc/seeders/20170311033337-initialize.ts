@@ -81,7 +81,7 @@ function loadStructureIdentifiers(when: Date) {
         },
         {
             id: uuid.v4(),
-            name: "branch",
+            name: "branch point",
             swcName: "fork point",
             value: 5,
             mutable: false,
@@ -90,7 +90,7 @@ function loadStructureIdentifiers(when: Date) {
         },
         {
             id: uuid.v4(),
-            name: "end",
+            name: "end point",
             swcName: "end point",
             value: 6,
             mutable: false,
