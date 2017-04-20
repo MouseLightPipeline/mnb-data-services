@@ -3,9 +3,10 @@ const fs = require('fs');
 const uuid = require('uuid');
 
 const fixturePath = path.normalize(__dirname + '/../fixtures/mouse-brain-areas.json');
+const fixturePathVolumes = path.normalize(__dirname + '/../fixtures/mouse-brain-area-volumes.json');
 
 export = {
-    up: async(queryInterface, Sequelize) => {
+    up: async (queryInterface, Sequelize) => {
         const when = new Date();
 
         await queryInterface.bulkInsert('BrainAreas', loadAllenBrainAreas(fixturePath, when), {});
@@ -56,7 +57,18 @@ function loadAllenBrainAreas(fixture: string, when: Date) {
 
     const data = JSON.parse(fileData);
 
+    const volumeInfo = loadAllenBrainAreaVolumes(fixturePathVolumes);
+
     return data.msg.map(obj => {
+        let volume = volumeInfo.find(v => v.id === obj.id);
+
+        if (!volume) {
+            volume = {
+                geometryFile: "",
+                geometryEnable: false
+            };
+        }
+
         return {
             id: uuid.v4(),
             structureId: obj.id,
@@ -70,8 +82,25 @@ function loadAllenBrainAreas(fixture: string, when: Date) {
             name: obj.name,
             safeName: obj.safe_name,
             acronym: obj.acronym,
+            geometryFile: volume.geometryFile,
+            geometryColor: obj.color_hex_triplet,
+            geometryEnable: volume.geometryEnable,
             updatedAt: when,
             createdAt: when
+        };
+    });
+}
+
+function loadAllenBrainAreaVolumes(fixture: string) {
+    const fileData = fs.readFileSync(fixture, {encoding: 'UTF-8'});
+
+    const data = JSON.parse(fileData);
+
+    return data.map(obj => {
+        return {
+            id: parseInt(obj.id),
+            geometryFile: obj.filename,
+            geometryEnable: !obj.state.disabled
         };
     });
 }
