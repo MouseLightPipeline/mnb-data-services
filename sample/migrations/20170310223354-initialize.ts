@@ -92,8 +92,7 @@ export = {
                 },
                 sampleDate: Sequelize.DATE,
                 activeRegistrationTransformId: {
-                    type: Sequelize.TEXT,
-                    defaultValue: ''
+                    type: Sequelize.TEXT
                 },
                 mouseStrainId: {
                     type: Sequelize.UUID,
