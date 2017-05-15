@@ -20,8 +20,18 @@ fi
 
 echo "processing with seed - you were warned"
 
+if [ ! -z "$1" ]
+  then
+    export DATABASE_HOST=$1
+fi
+
 cd "./sample"
-sequelize db:seed:all
+npm run seed
+
+if [ ! -z "$1" ]
+  then
+    export DATABASE_PORT=5433
+fi
 
 cd "../swc"
-sequelize db:seed:all
+npm run seed

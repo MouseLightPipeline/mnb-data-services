@@ -1,9 +1,15 @@
 {
   "name": "influx",
-  "version": "1.0.0",
-  "main": "migrate.js",
-  "license": "MIT",
+  "version": "0.1.0",
+  "license": "Janelia",
+  "main": "index.js",
+  "scripts": {
+    "migrate": "node index.js"
+  },
   "dependencies": {
     "influx": "^5.0.6"
+  },
+  "devDependencies": {
+    "@types/node": "^7.0.18"
   }
 }

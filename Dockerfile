@@ -1,4 +1,4 @@
-FROM node:7.5
+FROM node:7.10
 
 ENV PG_APP_HOME="/etc/docker-postgresql"\
     PG_VERSION=9.6 \
@@ -25,7 +25,7 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-k
 WORKDIR /apps
 
 # Install production app dependencies
-RUN npm install -g yarn typescript sequelize-cli pg
+RUN yarn global add typescript
 
 # Bundle apps
 COPY . .
@@ -40,6 +40,7 @@ RUN cd /apps/transform; yarn install
 RUN cd /apps/transform; tsc
 
 RUN cd /apps/influx; yarn install
+RUN cd /apps/influx; tsc
 
 RUN cd /apps/backups; yarn install
 RUN cd /apps/backups; tsc

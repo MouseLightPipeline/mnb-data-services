@@ -2,16 +2,33 @@
 
 echo "Perform backup of all databases."
 
-if [ -z "${PGPASSWORD}" ]; then
+if [ -z ${PGPASSWORD} ]; then
     export PGPASSWORD="pgsecret"
 fi
 
-if [ -z "${BACKUP_VOL}" ]; then
+if [ -z ${BACKUP_VOL} ]; then
     export BACKUP_VOL="/opt/data/backups"
 fi
 
-node backups/backup.ts ../sample/config/config.json ${BACKUP_VOL} sample
+if [ ! -z "$1" ]
+  then
+    export DATABASE_HOST=$1
+fi
 
-node backups/backup.ts ../swc/config/config.json ${BACKUP_VOL} swc
+cd backups
 
-node backups/backup.ts ../transform/config/config.json ${BACKUP_VOL} transform
+npm run backup -- ../sample/options/databaseOptions ${BACKUP_VOL} sample
+
+if [ ! -z "$1" ]
+  then
+    export DATABASE_PORT=5433
+fi
+
+npm run backup -- ../swc/options/databaseOptions ${BACKUP_VOL} swc
+
+if [ ! -z "$1" ]
+  then
+    export DATABASE_PORT=5434
+fi
+
+npm run backup -- ../transform/options/databaseOptions ${BACKUP_VOL} transform

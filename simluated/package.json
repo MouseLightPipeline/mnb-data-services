@@ -1,21 +1,17 @@
 {
-  "name": "backups",
+  "name": "simulated",
   "version": "1.0.0",
   "description": "",
-  "main": "backup.js",
+  "main": "genSwc.js",
   "scripts": {},
   "author": "Patrick Edson <pedson@leapscientific.com>",
-  "license": "Janelia",
-  "scripts": {
-    "backup": "node backup.js"
-  },
+  "license": "",
   "devDependencies": {
     "@types/fs-extra": "^2.0.0",
-    "@types/moment": "^2.13.0",
     "@types/node": "^7.0.8"
   },
   "dependencies": {
     "fs-extra": "^2.1.2",
-    "moment": "^2.18.0"
+    "typescript": "^2.2.1"
   }
 }

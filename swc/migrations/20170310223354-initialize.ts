@@ -79,7 +79,7 @@ export = {
                 deletedAt: Sequelize.DATE
             });
 
-        await queryInterface.addIndex("SwcTracings", ["annotator"]);
+        // await queryInterface.addIndex("SwcTracings", ["annotator"]); // disallowed by mssql
         await queryInterface.addIndex("SwcTracings", ["neuronId"]);
         await queryInterface.addIndex("SwcTracings", ["tracingStructureId"]);
 

@@ -8,8 +8,19 @@ const fixturePathVolumes = path.normalize(__dirname + '/../fixtures/mouse-brain-
 export = {
     up: async (queryInterface, Sequelize) => {
         const when = new Date();
+        const chunkSize = 250;
 
-        await queryInterface.bulkInsert('BrainAreas', loadAllenBrainAreas(fixturePath, when), {});
+        const items =  loadAllenBrainAreas(fixturePath, when);
+
+        while (items.length > chunkSize) {
+            const chunk = items.splice(0, chunkSize);
+            await queryInterface.bulkInsert('BrainAreas', chunk, {});
+        }
+
+        if (items.length > 0) {
+            await queryInterface.bulkInsert('BrainAreas', items, {});
+        }
+
         await queryInterface.bulkInsert('Fluorophores', loadFluorophores(when), {});
         await queryInterface.bulkInsert('MouseStrains', loadMouseStrains(when), {});
         await queryInterface.bulkInsert('InjectionViruses', loadInjectionViruses(when), {});

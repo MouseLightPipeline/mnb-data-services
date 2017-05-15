@@ -1,6 +1,6 @@
 {
   "name": "ndb-data",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Management of data volumes.  Migration and backup.",
   "main": "index.js",
   "scripts": {
