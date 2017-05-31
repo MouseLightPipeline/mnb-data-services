@@ -1,22 +1,24 @@
 import {IConnectionOptions} from "ndb-data-models";
 
-export interface IDatabases<T> {
-    sample: IDatabaseEnv<T>;
+export interface IDatabases {
+    sample: IDatabaseEnv;
 }
 
-export interface IDatabaseEnv<T> {
-    development: T;
-    test: T;
-    azure: T;
-    production: T;
+export interface IDatabaseEnv {
+    development: IConnectionOptions;
+    test: IConnectionOptions;
+    azure: IConnectionOptions;
+    production: IConnectionOptions;
+
+    [name: string]: IConnectionOptions;
 }
 
-export const Databases: IDatabases<IConnectionOptions> = {
+export const Databases: IDatabases = {
     sample: {
         development: {
             database: "samples_development",
             username: "postgres",
-            host: "sample-db",
+            host: "localhost",
             port: 5432,
             dialect: "postgres",
             logging: null

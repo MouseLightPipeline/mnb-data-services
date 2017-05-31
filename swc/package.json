@@ -1,6 +1,6 @@
 {
   "name": "swc-data",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Management of data volumes.  Migration and backup.",
   "author": "Patrick Edson <pedson@leapscientific.com>",
   "license": "Janelia",

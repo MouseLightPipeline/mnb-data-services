@@ -16,7 +16,7 @@ export const Databases: IDatabases<IConnectionOptions> = {
         development: {
             database: "swc_development",
             username: "postgres",
-            host: "swc-db",
+            host: "localhost",
             port: 5432,
             dialect: "postgres",
             logging: null

@@ -1,12 +1,19 @@
-const path = require('path');
-const fs = require('fs');
-const uuid = require('uuid');
+import * as path from "path";
+import * as fs from "fs";
+import * as uuid from "uuid";
+import {QueryInterface} from "sequelize";
 
-const fixturePath = path.normalize(__dirname + '/../fixtures/mouse-brain-areas.json');
-const fixturePathVolumes = path.normalize(__dirname + '/../fixtures/mouse-brain-area-volumes.json');
+const fixturePath = path.normalize(path.join(__dirname, "fixtures/mouse-brain-areas.json"));
+const fixturePathVolumes = path.normalize(path.join(__dirname, "fixtures/mouse-brain-area-volumes.json"));
+
+interface IVolumeInfo {
+    id?: number;
+    geometryFile: string;
+    geometryEnable: boolean;
+}
 
 export = {
-    up: async (queryInterface, Sequelize) => {
+    up: async (queryInterface: QueryInterface) => {
         const when = new Date();
         const chunkSize = 250;
 
@@ -14,36 +21,36 @@ export = {
 
         while (items.length > chunkSize) {
             const chunk = items.splice(0, chunkSize);
-            await queryInterface.bulkInsert('BrainAreas', chunk, {});
+            await queryInterface.bulkInsert("BrainAreas", chunk, {});
         }
 
         if (items.length > 0) {
-            await queryInterface.bulkInsert('BrainAreas', items, {});
+            await queryInterface.bulkInsert("BrainAreas", items, {});
         }
 
-        await queryInterface.bulkInsert('Fluorophores', loadFluorophores(when), {});
-        await queryInterface.bulkInsert('MouseStrains', loadMouseStrains(when), {});
-        await queryInterface.bulkInsert('InjectionViruses', loadInjectionViruses(when), {});
+        await queryInterface.bulkInsert("Fluorophores", loadFluorophores(when), {});
+        await queryInterface.bulkInsert("MouseStrains", loadMouseStrains(when), {});
+        await queryInterface.bulkInsert("InjectionViruses", loadInjectionViruses(when), {});
     },
 
-    down: function (queryInterface, Sequelize) {
-        return queryInterface.bulkDelete('BrainAreas', null, {});
+    down: function (queryInterface: QueryInterface) {
+        return queryInterface.bulkDelete("BrainAreas", null, {});
     }
 };
 
 function loadMouseStrains(when: Date) {
-    return [{id: uuid.v4(), name: 'C57BL/6J', updatedAt: when, createdAt: when}];
+    return [{id: uuid.v4(), name: "C57BL/6J", updatedAt: when, createdAt: when}];
 }
 
 function loadInjectionViruses(when: Date) {
     return [{
         id: uuid.v4(),
-        name: 'AAV2/1.FLEX-eGFP',
+        name: "AAV2/1.FLEX-eGFP",
         updatedAt: when,
         createdAt: when
     }, {
         id: uuid.v4(),
-        name: 'AAV2/1.FLEX-tdTomato',
+        name: "AAV2/1.FLEX-tdTomato",
         updatedAt: when,
         createdAt: when
     }];
@@ -52,25 +59,25 @@ function loadInjectionViruses(when: Date) {
 function loadFluorophores(when: Date) {
     return [{
         id: uuid.v4(),
-        name: 'eGFP',
+        name: "eGFP",
         updatedAt: when,
         createdAt: when
     }, {
         id: uuid.v4(),
-        name: 'tdTomato',
+        name: "tdTomato",
         updatedAt: when,
         createdAt: when
     }];
 }
 
 function loadAllenBrainAreas(fixture: string, when: Date) {
-    const fileData = fs.readFileSync(fixture, {encoding: 'UTF-8'});
+    const fileData = fs.readFileSync(fixture, {encoding: "UTF-8"});
 
     const data = JSON.parse(fileData);
 
     const volumeInfo = loadAllenBrainAreaVolumes(fixturePathVolumes);
 
-    return data.msg.map(obj => {
+    return data.msg.map((obj: any) => {
         let volume = volumeInfo.find(v => v.id === obj.id);
 
         if (!volume) {
@@ -102,12 +109,12 @@ function loadAllenBrainAreas(fixture: string, when: Date) {
     });
 }
 
-function loadAllenBrainAreaVolumes(fixture: string) {
-    const fileData = fs.readFileSync(fixture, {encoding: 'UTF-8'});
+function loadAllenBrainAreaVolumes(fixture: string): IVolumeInfo[] {
+    const fileData = fs.readFileSync(fixture, {encoding: "UTF-8"});
 
     const data = JSON.parse(fileData);
 
-    return data.map(obj => {
+    return data.map((obj: any) => {
         return {
             id: parseInt(obj.id),
             geometryFile: obj.filename,

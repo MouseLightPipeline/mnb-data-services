@@ -16,7 +16,7 @@ export interface IDatabaseEnv<T> {
 export const Databases: IDatabases<IConnectionOptions> = {
     influx: {
         development: {
-            host: "metrics-db",
+            host: "localhost",
             port: 8086
         },
         test: {

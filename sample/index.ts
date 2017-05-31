@@ -1,25 +1,25 @@
 import * as path from "path";
-import {migrate, seed} from "ndb-data-models";
 
+import {migrateSampleDatabase, seed} from "ndb-data-models";
 import {Databases} from "./options/databaseOptions";
 
 if (process.argv.length > 2) {
     switch (process.argv[2]) {
         case "migrate":
-            migrateSample();
+            migrateSample().then(()=>{});
             break;
         case "seed":
-            seedSample();
+            seedSample().then(()=>{});
             break;
     }
 }
 
-export function migrateSample() {
-    migrate(loadConfiguration(), path.normalize("./migrations"));
+export async function migrateSample() {
+    await migrateSampleDatabase(loadConfiguration());
 }
 
-export function seedSample() {
-    seed(loadConfiguration(), path.normalize(path.join(__dirname, "seeders")));
+export async function seedSample() {
+    await seed(loadConfiguration(), path.normalize(path.join(__dirname, "seeders")));
 }
 
 function loadConfiguration() {

@@ -1,6 +1,6 @@
 {
   "name": "sample-data",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Management of data volumes.  Migration and backup.",
   "author": "Patrick Edson <pedson@leapscientific.com>",
   "license": "Janelia",
@@ -10,11 +10,13 @@
     "seed": "node index.js seed"
   },
   "dependencies": {
-    "ndb-data-models": "^0.4.0",
+    "ndb-data-models": "^0.7.10",
+    "pg": "^6.2.3",
     "uuid": "^3.0.1"
   },
   "devDependencies": {
     "@types/node": "^7.0.8",
-    "@types/sequelize": "^4.0.53"
+    "@types/sequelize": "^4.0.53",
+    "@types/uuid": "^2.0.29"
   }
 }

@@ -1,20 +1,26 @@
 {
-  "name": "ndb-data",
-  "version": "0.1.0",
+  "name": "data",
+  "version": "1.0.0",
   "description": "Management of data volumes.  Migration and backup.",
   "main": "index.js",
+  "dockerRepository": "mouselightdatabrowser",
   "scripts": {
-    "docker-build": "docker build --tag mouselightdatabrowser/data .",
-    "docker-push": "docker push mouselightdatabrowser/data"
+    "docker-build": "gulp docker-build",
+    "release": "gulp release"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MouseLightDataBrowser/ndb-data.git"
+    "url": "git+https://github.com/MouseLightDataBrowser/data.git"
   },
   "author": "Patrick Edson <pedson@leapscientific.com>",
   "license": "Janelia",
   "bugs": {
-    "url": "https://github.com/MouseLightDataBrowser/ndb-data/issues"
+    "url": "https://github.com/MouseLightDataBrowser/data/issues"
   },
-  "homepage": "https://github.com/MouseLightDataBrowser/ndb-data#readme"
+  "homepage": "https://github.com/MouseLightDataBrowser/data#readme",
+  "devDependencies": {
+    "@types/node": "^7.0.22",
+    "gulp": "^3.9.1",
+    "gulp-shell": "^0.6.3"
+  }
 }
