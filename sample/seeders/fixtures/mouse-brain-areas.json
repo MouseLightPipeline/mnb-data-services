@@ -14565,7 +14565,7 @@
       "weight": 8690
     },
     {
-      "acronym": "root",
+      "acronym": "wholebrain",
       "atlas_id": -1,
       "color_hex_triplet": "FFFFFF",
       "depth": 0,
@@ -14575,7 +14575,7 @@
       "graph_order": 0,
       "hemisphere_id": 3,
       "id": 997,
-      "name": "root",
+      "name": "Whole Brain",
       "neuro_name_structure_id": null,
       "neuro_name_structure_id_path": null,
       "ontology_id": 1,
