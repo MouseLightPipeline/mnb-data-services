@@ -45,4 +45,7 @@ RUN cd /apps/influx; tsc
 RUN cd /apps/backups; yarn install
 RUN cd /apps/backups; tsc
 
+RUN cd /apps/synthetic; yarn install
+RUN cd /apps/synthetic; tsc
+
 CMD ["/apps/backup.sh"]
