@@ -9,6 +9,7 @@
     "migrate": "node index.js migrate"
   },
   "dependencies": {
+    "mssql": "^4.1.0",
     "ndb-data-models": "^0.4.0",
     "uuid": "^3.0.1"
   },

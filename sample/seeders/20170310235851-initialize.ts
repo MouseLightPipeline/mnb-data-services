@@ -17,7 +17,7 @@ export = {
         const when = new Date();
         const chunkSize = 250;
 
-        const items =  loadAllenBrainAreas(fixturePath, when);
+        const items = loadAllenBrainAreas(fixturePath, when);
 
         while (items.length > chunkSize) {
             const chunk = items.splice(0, chunkSize);
@@ -39,18 +39,18 @@ export = {
 };
 
 function loadMouseStrains(when: Date) {
-    return [{id: uuid.v4(), name: "C57BL/6J", updatedAt: when, createdAt: when}];
+    return [{id: "e3fda807-f57c-4b14-b4fd-0accfd668017", name: "C57BL/6J", updatedAt: when, createdAt: when}];
 }
 
 function loadInjectionViruses(when: Date) {
     return [{
-        id: uuid.v4(),
+        id: "7c792530-b1b0-47d3-b4c2-c7089523a78d",
         name: "AAV2/1.FLEX-eGFP",
         updatedAt: when,
         createdAt: when
     }, {
         id: uuid.v4(),
-        name: "AAV2/1.FLEX-tdTomato",
+        name: "75b6241f-6c5c-4415-a329-e18862e4cc9e",
         updatedAt: when,
         createdAt: when
     }];
@@ -58,12 +58,12 @@ function loadInjectionViruses(when: Date) {
 
 function loadFluorophores(when: Date) {
     return [{
-        id: uuid.v4(),
+        id: "47fc1eff-a7e0-4a56-9e4d-5797f8d28d5f",
         name: "eGFP",
         updatedAt: when,
         createdAt: when
     }, {
-        id: uuid.v4(),
+        id: "48fd3c4e-d0ad-4ef7-8a6d-b62248930ddf",
         name: "tdTomato",
         updatedAt: when,
         createdAt: when

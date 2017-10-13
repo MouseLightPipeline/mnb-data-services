@@ -10,13 +10,14 @@
     "seed": "node index.js seed"
   },
   "dependencies": {
-    "ndb-data-models": "^0.7.10",
+    "mssql": "^4.1.0",
+    "ndb-data-models": "^0.7.18",
     "pg": "^6.2.3",
     "uuid": "^3.0.1"
   },
   "devDependencies": {
     "@types/node": "^7.0.8",
     "@types/sequelize": "^4.0.53",
-    "@types/uuid": "^2.0.29"
+    "@types/uuid": "cd ^2.0.29"
   }
 }

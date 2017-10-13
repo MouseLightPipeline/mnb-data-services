@@ -1,6 +1,6 @@
 {
   "name": "data",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Management of data volumes.  Migration and backup.",
   "main": "index.js",
   "dockerRepository": "mouselightdatabrowser",
@@ -22,5 +22,8 @@
     "@types/node": "^7.0.22",
     "gulp": "^3.9.1",
     "gulp-shell": "^0.6.3"
+  },
+  "dependencies": {
+    "mssql": "^4.1.0"
   }
 }

@@ -31,8 +31,9 @@ export const Databases: IDatabases<IConnectionOptions> = {
         },
         azure: {
             database: "jrcndb",
-            username: "j4n3lia",
-            host: "janeliandb.database.windows.net",
+            username: "JaNEadmin",
+            password: "",
+            host: "jrcndb.database.windows.net",
             dialect: "mssql",
             dialectOptions: {
                 encrypt: true,

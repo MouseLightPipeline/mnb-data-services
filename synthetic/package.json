@@ -9,6 +9,7 @@
     "generate": "node $NODE_DEBUG_OPTION index.js"
   },
   "dependencies": {
+    "hdf5": "https://github.com/pedson/hdf5.node.git",
     "ndb-data-models": "^0.4.0",
     "random-word": "^2.0.0",
     "uuid": "^3.1.0"

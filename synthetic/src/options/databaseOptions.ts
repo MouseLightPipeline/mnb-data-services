@@ -4,13 +4,13 @@ export interface IDatabases {
     sample: IDatabaseEnv;
     swc: IDatabaseEnv;
     transform: IDatabaseEnv;
-    metrics: IDatabaseEnv;
 }
 
 export interface IDatabaseEnv {
     development: IConnectionOptions;
     test: IConnectionOptions;
     azure?: IConnectionOptions;
+    azure_container?: IConnectionOptions;
     production: IConnectionOptions;
 }
 
@@ -34,12 +34,22 @@ export const Databases: IDatabases = {
         },
         azure: {
             database: "jrcndb",
-            username: "j4n3lia",
-            host: "janeliandb.database.windows.net",
+            username: "JaNEadmin",
+            password: "",
+            host: "jrcndb.database.windows.net",
             dialect: "mssql",
             dialectOptions: {
-                encrypt: true
+                encrypt: true,
+                requestTimeout: 60000
             },
+            logging: null
+        },
+        azure_container: {
+            database: "samples_production",
+            username: "postgres",
+            host: "jrcjane.eastus.cloudapp.azure.com",
+            port: 5432,
+            dialect: "postgres",
             logging: null
         },
         production: {
@@ -70,12 +80,22 @@ export const Databases: IDatabases = {
         },
         azure: {
             database: "jrcndb",
-            username: "j4n3lia",
-            host: "janeliandb.database.windows.net",
+            username: "JaNEadmin",
+            password: "",
+            host: "jrcndb.database.windows.net",
             dialect: "mssql",
             dialectOptions: {
-                encrypt: true
+                encrypt: true,
+                requestTimeout: 60000
             },
+            logging: null
+        },
+        azure_container: {
+            database: "swc_production",
+            username: "postgres",
+            host: "jrcjane.eastus.cloudapp.azure.com",
+            port: 5433,
+            dialect: "postgres",
             logging: null
         },
         production: {
@@ -106,12 +126,22 @@ export const Databases: IDatabases = {
         },
         azure: {
             database: "jrcndb",
-            username: "j4n3lia",
-            host: "janeliandb.database.windows.net",
+            username: "JaNEadmin",
+            password: "",
+            host: "jrcndb.database.windows.net",
             dialect: "mssql",
             dialectOptions: {
-                encrypt: true
+                encrypt: true,
+                requestTimeout: 60000
             },
+            logging: null
+        },
+        azure_container: {
+            database: "transform_production",
+            username: "postgres",
+            host: "jrcjane.eastus.cloudapp.azure.com",
+            port: 5434,
+            dialect: "postgres",
             logging: null
         },
         production: {
@@ -121,23 +151,6 @@ export const Databases: IDatabases = {
             port: 5432,
             dialect: "postgres",
             logging: null
-        }
-    },
-    metrics: {
-        development: {
-            host: "localhost",
-            port: 8086,
-            database: "query_metrics_db"
-        },
-        test: {
-            host: "metrics-db",
-            port: 8086,
-            database: "query_metrics_db"
-        },
-        production: {
-            host: "metrics-db",
-            port: 8086,
-            database: "query_metrics_db"
         }
     }
 };

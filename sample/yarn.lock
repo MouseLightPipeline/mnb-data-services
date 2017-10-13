@@ -179,9 +179,17 @@ mssql@^4.0.4:
     generic-pool "^3.1.7"
     tedious "^2.0.0"
 
-ndb-data-models@^0.7.10:
-  version "0.7.10"
-  resolved "https://registry.yarnpkg.com/ndb-data-models/-/ndb-data-models-0.7.10.tgz#82348e3344f73701e0bf1ff07b5e05208c448840"
+mssql@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/mssql/-/mssql-4.1.0.tgz#5a70e24d751c28bcb9f23acf709c1bdaccc8eae6"
+  dependencies:
+    debug "^2.6.3"
+    generic-pool "^3.1.7"
+    tedious "^2.0.0"
+
+ndb-data-models@^0.7.18:
+  version "0.7.18"
+  resolved "https://registry.yarnpkg.com/ndb-data-models/-/ndb-data-models-0.7.18.tgz#5b8216a7036994421112fdcd0b884839b97e8835"
   dependencies:
     debug "^2.6.3"
     mssql "^4.0.4"

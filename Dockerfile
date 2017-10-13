@@ -1,5 +1,11 @@
 FROM node:7.10
 
+RUN cd /tmp; wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0-patch1/src/hdf5-1.10.0-patch1.tar.gz
+RUN cd /tmp; tar xvzf hdf5-1.10.0-patch1.tar.gz
+RUN cd /tmp/hdf5-1.10.0-patch1; ./configure --prefix=/usr/local --enable-cxx
+RUN cd /tmp/hdf5-1.10.0-patch1; make
+RUN cd /tmp/hdf5-1.10.0-patch1; make install
+
 ENV PG_APP_HOME="/etc/docker-postgresql"\
     PG_VERSION=9.6 \
     PG_USER=postgres \
@@ -25,7 +31,7 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-k
 WORKDIR /apps
 
 # Install production app dependencies
-RUN yarn global add typescript
+RUN yarn global add typescript node-gyp
 
 # Bundle apps
 COPY . .

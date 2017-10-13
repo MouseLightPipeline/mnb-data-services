@@ -1,3 +1,8 @@
+import {ServiceOptions} from "./src/options/serviceOptions";
+
+const hdf5 = require("hdf5").hdf5;
+const Access = require("hdf5/lib/globals").Access;
+
 import {IStructureIdentifier, StructureIdentifiers} from "./src/models/swc/structureIdentifier";
 
 const randomWord = require('random-word');
@@ -41,6 +46,21 @@ let soma: IStructureIdentifier = null;
 let path: IStructureIdentifier = null;
 let endPoint: IStructureIdentifier = null;
 
+
+const brainAreaReferenceFile = new hdf5.File(ServiceOptions.ontologyPath, Access.ACC_RDONLY);
+
+const brainTransformMatrix = brainAreaReferenceFile.getDatasetAttributes("OntologyAtlas")["Transformation_Matrix"];
+
+const ba_dataset_ref = hdf5.openDataset(brainAreaReferenceFile.id, "OntologyAtlas", {
+    count: [1, 1, 1]
+});
+
+const brainLookupExtents = ba_dataset_ref.dims;
+
+console.log(`brain lookup extents (HDF5 order) ${brainLookupExtents[0]} ${brainLookupExtents[1]} ${brainLookupExtents[2]}`);
+
+const brainIdLookup = new Map<number, IBrainArea>();
+
 _storageManager.whenReady().then(async (b) => {
     brainAreas = await _storageManager.BrainAreas.findAll({});
     mouseStrains = await _storageManager.MouseStrains.findAll({});
@@ -54,6 +74,13 @@ _storageManager.whenReady().then(async (b) => {
     path = await _storageManager.StructureIdentifiers.findOne({where: {value: StructureIdentifiers.undefined}});
     endPoint = await _storageManager.StructureIdentifiers.findOne({where: {value: StructureIdentifiers.endPoint}});
 
+    if (brainIdLookup.size === 0) {
+        console.log("populating brain area id lookup");
+        brainAreas.forEach(brainArea => {
+            brainIdLookup.set(brainArea.structureId, brainArea);
+        });
+    }
+
     await populateDatabase();
 
     console.log("Finished");
@@ -63,7 +90,9 @@ _storageManager.whenReady().then(async (b) => {
 
 async function populateDatabase() {
     for (let idx = 0; idx < sampleMax; idx++) {
-        const sample = await createSample();
+        await createSample();
+
+        console.log(`Complete sample ${idx + 1}`);
     }
 }
 
@@ -182,7 +211,26 @@ async function createTracing(neuron, tracingStructureId) {
     const compartmentMap = new Map<string, IBrainCompartmentCounts>();
 
     const tNodes = nodes.map((n) => {
-        const brainAreaId = n.sampleNumber === 1 ? neuron.brainAreaId : getRandomBrainArea().id;
+
+        let brainAreaId = null;
+
+        const brainAreaInput = matrixMultiply([n.z, n.y, n.x, 1], brainTransformMatrix).reverse();
+
+        if (isValidBrainDataSetLocation(brainAreaInput, brainLookupExtents)) {
+            const brainAreaStructureId = hdf5.readDatasetHyperSlab(ba_dataset_ref.memspace, ba_dataset_ref.dataspace, ba_dataset_ref.dataset, ba_dataset_ref.rank, {
+                start: brainAreaInput,
+                stride: [1, 1, 1],
+                count: [1, 1, 1]
+            });
+
+            const brainStructureId = brainAreaStructureId.data[0][0][0];
+
+            if (brainIdLookup.has(brainStructureId)) {
+                brainAreaId = brainIdLookup.get(brainStructureId).id;
+            }
+        } else {
+            // debug(`location 0 ${brainAreaInput[1]} ${brainAreaInput[2]} ${brainAreaInput[2]} is outside brain extents`);
+        }
 
         const node = {
             tracingId: tracing.id,
@@ -194,7 +242,7 @@ async function createTracing(neuron, tracingStructureId) {
             radius: n.radius,
             parentNumber: n.parentNumber,
             structureIdentifierId: n.structureIdentifierId,
-            brainAreaId: n.sampleNumber === 1 ? neuron.brainAreaId : getRandomBrainArea().id,
+            brainAreaId: brainAreaId,
             lengthToParent: 0
         };
 
@@ -281,4 +329,17 @@ interface IBrainCompartmentCounts {
     path: number;
     branch: number;
     end: number;
+}
+
+function matrixMultiply(loc, transform) {
+    return transform.map((row) => {
+        return Math.ceil(row.reduce((sum, value, col) => {
+            return sum + (loc[col] * value);
+        }, 0)) - 1; // Zero-based - source is 1 based (MATLAB).
+    }).slice(0, 3);
+}
+
+function isValidBrainDataSetLocation(location, extents): boolean {
+    // Stride is assumed to be 1, so check that location is than extents.
+    return (location[0] < extents[0]) && (location[1] < extents[1]) && (location[2] < extents[2]);
 }

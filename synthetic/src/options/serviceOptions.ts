@@ -103,14 +103,6 @@ function loadConfiguration(): IServiceOptions {
     c.databaseOptions.transform.port = process.env.TRANSFORM_DB_PORT || c.databaseOptions.transform.port;
     c.databaseOptions.transform.password = process.env.DATABASE_PW || "pgsecret";
 
-    c.databaseOptions.metrics = Databases.metrics[dbEnvName];
-
-    // Can be null if not implemented in a particular deployment environment.
-    if (c.databaseOptions.metrics) {
-        c.databaseOptions.metrics.host = process.env.METRICS_DB_HOST || c.databaseOptions.metrics.host;
-        c.databaseOptions.metrics.port = process.env.METRICS_DB_PORT || c.databaseOptions.metrics.port;
-    }
-
     return c;
 }
 

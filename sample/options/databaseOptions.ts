@@ -10,7 +10,7 @@ export interface IDatabaseEnv {
     azure: IConnectionOptions;
     production: IConnectionOptions;
 
-    [name: string]: IConnectionOptions;
+    [name: string]: any;
 }
 
 export const Databases: IDatabases = {
@@ -18,6 +18,7 @@ export const Databases: IDatabases = {
         development: {
             database: "samples_development",
             username: "postgres",
+            password: "",
             host: "localhost",
             port: 5432,
             dialect: "postgres",
@@ -26,6 +27,7 @@ export const Databases: IDatabases = {
         test: {
             database: "samples_test",
             username: "postgres",
+            password: "",
             host: "sample-db",
             port: 5432,
             dialect: "postgres",
@@ -33,8 +35,9 @@ export const Databases: IDatabases = {
         },
         azure: {
             database: "jrcndb",
-            username: "j4n3lia",
-            host: "janeliandb.database.windows.net",
+            username: "JaNEadmin",
+            password: "",
+            host: "jrcndb.database.windows.net",
             dialect: "mssql",
             dialectOptions: {
                 encrypt: true,
@@ -45,6 +48,7 @@ export const Databases: IDatabases = {
         production: {
             database: "samples_production",
             username: "postgres",
+            password: "",
             host: "sample-db",
             port: 5432,
             dialect: "postgres",

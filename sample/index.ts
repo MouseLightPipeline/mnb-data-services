@@ -2,6 +2,7 @@ import * as path from "path";
 
 import {migrateSampleDatabase, seed} from "ndb-data-models";
 import {Databases} from "./options/databaseOptions";
+import {isNullOrUndefined} from "util";
 
 if (process.argv.length > 2) {
     switch (process.argv[2]) {
@@ -29,10 +30,23 @@ function loadConfiguration() {
 
     const databaseOptions = Databases.sample[dbEnvName];
 
-    databaseOptions.password = process.env.DATABASE_PW || "pgsecret";
+    const password = process.env.DATABASE_PW || "pgsecret";
 
-    databaseOptions.host = process.env.DATABASE_HOST || databaseOptions.host;
-    databaseOptions.port = process.env.DATABASE_PORT || databaseOptions.port;
+    if (!isNullOrUndefined(databaseOptions.password)) {
+        databaseOptions.password = password;
+    }
+
+    if (databaseOptions.host) {
+        databaseOptions.host = process.env.DATABASE_HOST || databaseOptions.host;
+    }
+
+    if (databaseOptions.port) {
+        databaseOptions.port = process.env.DATABASE_PORT || databaseOptions.port;
+    }
+
+    if (databaseOptions.uri) {
+        databaseOptions.uri = databaseOptions.uri.replace("{your_password}", password);
+    }
 
     return databaseOptions;
 }
