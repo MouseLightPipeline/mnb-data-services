@@ -26,9 +26,9 @@
     "@types/lodash" "*"
     "@types/validator" "*"
 
-"@types/uuid@^2.0.29":
-  version "2.0.29"
-  resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-2.0.29.tgz#939a198ab73567f811ab84f670d2be9c25addd41"
+"@types/uuid@cd ^2.0.29":
+  version "2.0.30"
+  resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-2.0.30.tgz#4dca12da43ae530f89f46d6d203935d2199652d5"
   dependencies:
     "@types/node" "*"
 
@@ -187,9 +187,9 @@ mssql@^4.1.0:
     generic-pool "^3.1.7"
     tedious "^2.0.0"
 
-ndb-data-models@^0.7.18:
-  version "0.7.18"
-  resolved "https://registry.yarnpkg.com/ndb-data-models/-/ndb-data-models-0.7.18.tgz#5b8216a7036994421112fdcd0b884839b97e8835"
+ndb-data-models@^0.8.3:
+  version "0.8.3"
+  resolved "https://registry.yarnpkg.com/ndb-data-models/-/ndb-data-models-0.8.3.tgz#2eb8b9635d973730c9ca0ae4e4ce0612eac857bf"
   dependencies:
     debug "^2.6.3"
     mssql "^4.0.4"

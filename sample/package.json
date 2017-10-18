@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "mssql": "^4.1.0",
-    "ndb-data-models": "^0.7.18",
+    "ndb-data-models": "^0.8.3",
     "pg": "^6.2.3",
     "uuid": "^3.0.1"
   },
