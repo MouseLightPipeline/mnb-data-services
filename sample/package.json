@@ -7,7 +7,8 @@
   "main": "index.js",
   "scripts": {
     "migrate": "node index.js migrate",
-    "seed": "node index.js seed"
+    "seed": "node index.js seed",
+    "doi": "node index.js doi"
   },
   "dependencies": {
     "csv": "^2.0.0",

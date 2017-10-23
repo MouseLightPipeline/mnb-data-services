@@ -1,6 +1,8 @@
+import * as fs from "fs";
 import * as path from "path";
+import * as csv from "csv";
 
-import {migrateSampleDatabase, seed} from "ndb-data-models";
+import {migrateSampleDatabase, SampleConnector, seed} from "ndb-data-models";
 import {Databases} from "./options/databaseOptions";
 import {isNullOrUndefined} from "util";
 
@@ -12,6 +14,10 @@ if (process.argv.length > 2) {
             break;
         case "seed":
             seedSample().then(() => {
+            });
+            break;
+        case "doi":
+            loadDOI().then(() => {
             });
             break;
     }
@@ -38,7 +44,7 @@ function loadConfiguration() {
         databaseOptions.password = password;
     }
 
-    databaseOptions.host = process.env.DATABASE_HOST || databaseOptions.host;
+    databaseOptions.host =  process.env.SAMPLE_DB_HOST || process.env.DATABASE_HOST || databaseOptions.host;
 
     databaseOptions.port = process.env.SAMPLE_DB_PORT || databaseOptions.port;
 
@@ -49,6 +55,25 @@ function loadConfiguration() {
     return databaseOptions;
 }
 
-function loadDOI() {
+async function loadDOI() {
+    const connector = new SampleConnector(loadConfiguration());
 
+    await connector.authenticate();
+
+    const filename = path.resolve(path.join(__dirname, "./mouselight_neuron_doi.csv"));
+
+    const data = fs.readFileSync(filename);
+
+    await csv.parse(data, async (err, data) => {
+        await data.map(async (line) => {
+            const neuron = await connector.models.Neuron.findOne({where: {idString: line[0]}});
+
+            if (neuron) {
+                await neuron.update({doi: line[1]});
+                console.log(`${neuron.idString}: ${neuron.doi}`);
+            } else {
+                console.log(`${line[0]} no entry for this neuron`);
+            }
+        });
+    });
 }
