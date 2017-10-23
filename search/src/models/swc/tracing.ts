@@ -14,7 +14,7 @@ export interface ISwcTracing {
     getNodes(): ISwcNode[];
 }
 
-export const TableName = "SwcTracings";
+export const TableName = "SwcTracing";
 
 export function sequelizeImport(sequelize, DataTypes) {
     const Tracing = sequelize.define(TableName, {

@@ -1,10 +1,4 @@
-export const TableName = "TracingStructures";
-
-export interface ITracingStructure {
-    id: string;
-    name: string;
-    value: number;
-}
+export const TableName = "TracingStructure";
 
 export function sequelizeImport(sequelize, DataTypes) {
     const TracingStructure = sequelize.define(TableName, {
@@ -18,11 +12,10 @@ export function sequelizeImport(sequelize, DataTypes) {
     }, {
         classMethods: {
             associate: models => {
-                TracingStructure.hasMany(models.SwcTracing, {foreignKey: "tracingStructureId", as: "Tracings"});
+               // TracingStructure.hasMany(models.SwcTracing, {foreignKey: "tracingStructureId", as: "Tracings"});
             }
         },
-        timestamps: true,
-        paranoid: true
+        timestamps: false,
     });
 
     return TracingStructure;

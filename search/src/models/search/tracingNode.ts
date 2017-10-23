@@ -1,16 +1,4 @@
-export interface ISwcNode {
-    id: string;
-    swcTracingId: string;
-    sampleNumber: number;
-    x: number;
-    y: number;
-    z: number;
-    radius: number;
-    parentNumber: number;
-    structureIdentifierId: string;
-}
-
-export const TableName = "SwcTracingNodes";
+export const TableName = "TracingNode";
 
 export function sequelizeImport(sequelize, DataTypes) {
     const TracingNode = sequelize.define(TableName, {
@@ -20,20 +8,22 @@ export function sequelizeImport(sequelize, DataTypes) {
             defaultValue: DataTypes.UUIDV4
         },
         sampleNumber: DataTypes.INTEGER,
+        parentNumber: DataTypes.INTEGER,
+        radius: DataTypes.DOUBLE,
+        lengthToParent: DataTypes.DOUBLE,
         x: DataTypes.DOUBLE,
         y: DataTypes.DOUBLE,
         z: DataTypes.DOUBLE,
-        radius: DataTypes.DOUBLE,
-        parentNumber: DataTypes.INTEGER
+        swcNodeId: DataTypes.UUID
     }, {
         classMethods: {
             associate: models => {
+                TracingNode.belongsTo(models.Tracing, {foreignKey: "tracingId"});
                 TracingNode.belongsTo(models.StructureIdentifier, {foreignKey: "structureIdentifierId"});
-                TracingNode.belongsTo(models.SwcTracing, {foreignKey: "swcTracingId"});
+                TracingNode.belongsTo(models.BrainArea, {foreignKey: "brainAreaId"});
             }
         },
-        timestamps: true,
-        paranoid: false
+        timestamps: false,
     });
 
     return TracingNode;

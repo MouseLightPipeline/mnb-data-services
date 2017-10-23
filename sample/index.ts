@@ -7,10 +7,12 @@ import {isNullOrUndefined} from "util";
 if (process.argv.length > 2) {
     switch (process.argv[2]) {
         case "migrate":
-            migrateSample().then(()=>{});
+            migrateSample().then(() => {
+            });
             break;
         case "seed":
-            seedSample().then(()=>{});
+            seedSample().then(() => {
+            });
             break;
     }
 }
@@ -36,17 +38,17 @@ function loadConfiguration() {
         databaseOptions.password = password;
     }
 
-    if (databaseOptions.host) {
-        databaseOptions.host = process.env.DATABASE_HOST || databaseOptions.host;
-    }
+    databaseOptions.host = process.env.DATABASE_HOST || databaseOptions.host;
 
-    if (databaseOptions.port) {
-        databaseOptions.port = process.env.DATABASE_PORT || databaseOptions.port;
-    }
+    databaseOptions.port = process.env.SAMPLE_DB_PORT || databaseOptions.port;
 
     if (databaseOptions.uri) {
         databaseOptions.uri = databaseOptions.uri.replace("{your_password}", password);
     }
 
     return databaseOptions;
+}
+
+function loadDOI() {
+
 }

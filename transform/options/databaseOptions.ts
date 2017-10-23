@@ -16,7 +16,7 @@ export const Databases: IDatabases<IConnectionOptions> = {
         development: {
             database: "transform_development",
             username: "postgres",
-            host: "localhost",
+            host: "transform-db",
             port: 5432,
             dialect: "postgres",
             logging: null

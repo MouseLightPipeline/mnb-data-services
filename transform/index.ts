@@ -32,7 +32,7 @@ function loadConfiguration() {
     databaseOptions.password = process.env.DATABASE_PW || "pgsecret";
 
     databaseOptions.host = process.env.DATABASE_HOST || databaseOptions.host;
-    databaseOptions.port = process.env.DATABASE_PORT || databaseOptions.port;
+    databaseOptions.port = process.env.TRANSFORM_DB_PORT || databaseOptions.port;
 
     return databaseOptions;
 }

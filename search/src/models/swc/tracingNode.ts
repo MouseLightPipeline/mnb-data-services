@@ -10,7 +10,7 @@ export interface ISwcNode {
     structureIdentifierId: string;
 }
 
-export const TableName = "SwcTracingNodes";
+export const TableName = "SwcTracingNode";
 
 export function sequelizeImport(sequelize, DataTypes) {
     const TracingNode = sequelize.define(TableName, {

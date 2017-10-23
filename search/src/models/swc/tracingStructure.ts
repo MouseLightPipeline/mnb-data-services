@@ -1,4 +1,4 @@
-export const TableName = "TracingStructures";
+export const TableName = "TracingStructure";
 
 export interface ITracingStructure {
     id: string;

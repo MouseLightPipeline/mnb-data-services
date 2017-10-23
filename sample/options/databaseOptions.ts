@@ -19,7 +19,7 @@ export const Databases: IDatabases = {
             database: "samples_development",
             username: "postgres",
             password: "",
-            host: "localhost",
+            host: "sample-db",
             port: 5432,
             dialect: "postgres",
             logging: null

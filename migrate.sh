@@ -16,5 +16,8 @@ npm run migrate
 cd "../transform"
 npm run migrate
 
+cd "../search"
+npm run migrate
+
 cd "../influx"
 npm run migrate

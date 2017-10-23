@@ -17,7 +17,7 @@ export enum StructureIdentifiers {
     endPoint = 6
 }
 
-export const TableName = "StructureIdentifiers";
+export const TableName = "StructureIdentifier";
 
 export function sequelizeImport(sequelize, DataTypes) {
     const StructureIdentifier = sequelize.define(TableName, {

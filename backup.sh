@@ -32,3 +32,10 @@ if [ ! -z "$1" ]
 fi
 
 npm run backup -- ../transform/options/databaseOptions ${BACKUP_VOL} transform
+
+if [ ! -z "$1" ]
+  then
+    export DATABASE_PORT=5435
+fi
+
+npm run backup -- ../search/src/options/databaseOptions ${BACKUP_VOL} search

@@ -26,7 +26,7 @@ export interface INodePage {
     nodes: ITracingNode[];
 }
 
-export const TableName = "TracingNodes";
+export const TableName = "TracingNode";
 
 export function sequelizeImport(sequelize, DataTypes) {
     const TracingNode = sequelize.define(TableName, {

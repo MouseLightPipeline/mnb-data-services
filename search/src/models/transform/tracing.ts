@@ -22,7 +22,7 @@ export interface ITracing {
     applyTransform?();
 }
 
-export const TableName = "Tracings";
+export const TableName = "Tracing";
 
 export function sequelizeImport(sequelize, DataTypes) {
     let Tracing = sequelize.define(TableName, {
