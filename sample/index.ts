@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import * as csv from "csv";
+const csv = require("csv");
 
 import {migrateSampleDatabase, SampleConnector, seed} from "ndb-data-models";
 import {Databases} from "./options/databaseOptions";
@@ -64,8 +64,8 @@ async function loadDOI() {
 
     const data = fs.readFileSync(filename);
 
-    await csv.parse(data, async (err, data) => {
-        await data.map(async (line) => {
+    await csv.parse(data, async (err: any, data: any) => {
+        await data.map(async (line: any) => {
             const neuron = await connector.models.Neuron.findOne({where: {idString: line[0]}});
 
             if (neuron) {

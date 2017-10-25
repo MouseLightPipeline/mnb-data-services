@@ -123,10 +123,6 @@ export class PersistentStorageManager {
         return this.searchDatabase.models;
     }
 
-    public get SearchConnection() {
-        return this.searchDatabase.connection;
-    }
-
     public async initialize() {
         this.sampleDatabase = await createSampleConnection();
         await authenticate(this.swcDatabase, "swc");
