@@ -124,17 +124,8 @@ async function processNeuron(neuron: INeuron, outputLocation: string) {
 
 }
 
-async function generateSwc() {
-
-}
-
-async function generateJSON() {
-
-}
-
 function swcHeader(sample: ISample, mouse: IMouseStrain, virus: IInjectionVirus, fluorophore: IFluorophore, neuron: INeuron) {
-    return `# Generated ${(new Date()).toUTCString()}.\n`
-        + `# Please consult Terms-of-Use at https://mouselight.janelia.org when referencing this reconstruction.\n`
+    return  `# Please consult Terms-of-Use at https://mouselight.janelia.org when referencing this reconstruction.\n`
         + `# DOI:\t\t\t\t\t${neuron.doi || "n/a"}\n`
         + `# Neuron Id:\t\t\t${neuron.idString}\n`
         + `# Sample Date:\t\t\t${sample.sampleDate.toUTCString()}\n`
@@ -206,26 +197,26 @@ async function mapToJSON(sample: ISample, mouse: IMouseStrain, virus: IInjection
             axon: axonNodes.map(n => {
                 if (n.brainAreaId) allenIds.push(n.brainAreaId);
                 return {
-                    sample: n.sampleNumber,
-                    type: n.parentNumber === -1 ? 1 : 2,
+                    sampleNumber: n.sampleNumber,
+                    structureIdentifier: n.parentNumber === -1 ? 1 : 2,
                     x: n.x,
                     y: n.y,
                     z: n.z,
-                    r: n.radius,
-                    parent: n.parentNumber,
+                    radius: n.radius,
+                    parentNumber: n.parentNumber,
                     allenId: n.brainAreaId ? brainAreaMap.get(n.brainAreaId).structureId : null
                 }
             }),
             dendrite: dendriteNodes.map(n => {
                 if (n.brainAreaId) allenIds.push(n.brainAreaId);
                 return {
-                    sample: n.sampleNumber,
-                    type: n.parentNumber === -1 ? 1 : 3,
+                    sampleNumber: n.sampleNumber,
+                    structureIdentifier: n.parentNumber === -1 ? 1 : 3,
                     x: n.x,
                     y: n.y,
                     z: n.z,
-                    r: n.radius,
-                    parent: n.parentNumber,
+                    radius: n.radius,
+                    parentNumber: n.parentNumber,
                     allenId: n.brainAreaId ? brainAreaMap.get(n.brainAreaId).structureId : null
                 }
             })

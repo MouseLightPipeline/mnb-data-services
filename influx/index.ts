@@ -1,44 +1,35 @@
 import {Databases} from "./options/databaseOptions";
-const Influx = require('influx');
+
+const Influx = require("influx");
 
 const options = loadOptions();
 
 if (options) {
-    const databaseName = 'query_metrics_db';
-
-    const influx = new Influx.InfluxDB({
-        host: options.host,
-        port: options.port,
-        database: databaseName,
-        schema: [
-            {
-                measurement: 'query_response_times',
-                fields: {
-                    queryObject: Influx.FieldType.STRING,
-                    querySql: Influx.FieldType.STRING,
-                    errors: Influx.FieldType.STRING,
-                    duration: Influx.FieldType.INTEGER
-                },
-                tags: [
-                    'user'
-                ]
-            }
-        ]
-    });
-
-    influx.getDatabaseNames()
-    .then(names => {
-        if (!names.includes(databaseName)) {
-            return influx.createDatabase(databaseName);
-        }
-    })
-    .then(() => {
-        console.log('databases updated');
-    })
-    .catch(err => {
+    migrateDatabase().then(() => {
+        console.log("Influx databases created");
+    }).catch(err => {
         console.error(`error creating Influx database`);
         console.error(err);
     });
+}
+
+async function migrateDatabase() {
+    if (options) {
+        const influx = new Influx.InfluxDB({
+            host: options.host,
+            port: options.port
+        });
+
+        const names = await influx.getDatabaseNames();
+
+        if (!names.includes("query_metrics_db")) {
+            await influx.createDatabase("query_metrics_db");
+        }
+
+        if (!names.includes("export_metrics_db")) {
+            await influx.createDatabase("export_metrics_db");
+        }
+    }
 }
 
 function loadOptions() {
@@ -49,8 +40,8 @@ function loadOptions() {
     if (Databases.influx[dbEnvName]) {
         const databaseOptions = Databases.influx[dbEnvName];
 
-        databaseOptions.host = process.env.DATABASE_HOST || databaseOptions.host;
-        databaseOptions.port = process.env.DATABASE_PORT || databaseOptions.port;
+        databaseOptions.host = process.env.METRICS_DB_HOST || process.env.DATABASE_HOST || databaseOptions.host;
+        databaseOptions.port = process.env.METRICS_DB_PORT || process.env.DATABASE_PORT || databaseOptions.port;
 
         return databaseOptions;
     } else {

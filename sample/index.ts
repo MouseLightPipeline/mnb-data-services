@@ -45,7 +45,6 @@ function loadConfiguration() {
     }
 
     databaseOptions.host =  process.env.SAMPLE_DB_HOST || process.env.DATABASE_HOST || databaseOptions.host;
-
     databaseOptions.port = process.env.SAMPLE_DB_PORT || databaseOptions.port;
 
     if (databaseOptions.uri) {

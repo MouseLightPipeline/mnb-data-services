@@ -178,20 +178,29 @@ async function syncNeuronBrainCompartmentMaps() {
             obj.somaX = node.x;
             obj.somaY = node.y;
             obj.somaZ = node.z;
+        } else {
+
+            obj.somaX = neuron.x;
+            obj.somaY = neuron.y;
+            obj.somaZ = neuron.z;
         }
 
         obj.tracingStructureId = tracing.tracingStructureId;
+
+        // Fix for how registered data was created.  Want it to match manually entered neuron information, not soma from
+        // tracing.
+        // obj.somaCount = 0;
 
         await storageManager.Search.NeuronBrainAreaMap.upsert(obj);
     }));
 
     const output = await storageManager.Search.NeuronBrainAreaMap.findAll({});
 
-    const nodeRemove = _.differenceBy(output, input, "id");
+    const toRemove = _.differenceBy(output, input, "id");
 
-    if (nodeRemove.length > 0) {
-        debug(`Remove ${nodeRemove.length} neuron brain area maps`);
-        await  storageManager.Search.NeuronBrainAreaMap.destroy({where: {id: {$in: nodeRemove.map(r => r.id)}}});
+    if (toRemove.length > 0) {
+        debug(`Remove ${toRemove.length} neuron brain area maps`);
+        await  storageManager.Search.NeuronBrainAreaMap.destroy({where: {id: {$in: toRemove.map(r => r.id)}}});
     }
 }
 
