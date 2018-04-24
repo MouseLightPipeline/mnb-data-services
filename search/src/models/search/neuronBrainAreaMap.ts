@@ -6,6 +6,8 @@ export function sequelizeImport(sequelize, DataTypes) {
             primaryKey: true,
             type: DataTypes.UUID
         },
+        neuronIdString: DataTypes.TEXT,
+        neuronDOI: DataTypes.TEXT,
         somaX: DataTypes.DOUBLE,
         somaY: DataTypes.DOUBLE,
         somaZ: DataTypes.DOUBLE,

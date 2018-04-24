@@ -187,6 +187,9 @@ async function syncNeuronBrainCompartmentMaps() {
 
         obj.tracingStructureId = tracing.tracingStructureId;
 
+        obj.neuronIdString = neuron.idString;
+        obj.neuronDOI = neuron.doi;
+
         // Fix for how registered data was created.  Want it to match manually entered neuron information, not soma from
         // tracing.
         // obj.somaCount = 0;

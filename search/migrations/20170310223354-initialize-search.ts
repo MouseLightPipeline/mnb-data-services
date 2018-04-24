@@ -241,6 +241,8 @@ export = {
                 pathCount: Sequelize.INTEGER,
                 branchCount: Sequelize.INTEGER,
                 endCount: Sequelize.INTEGER,
+                neuronIdString: Sequelize.TEXT,
+                neuronDOI: Sequelize.TEXT,
                 tracingId: {
                     type: Sequelize.UUID,
                     references: {
