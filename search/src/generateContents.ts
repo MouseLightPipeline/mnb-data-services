@@ -117,6 +117,8 @@ async function syncNodes() {
 
     let offset = 0;
 
+    debug(`Syncing ${count} nodes`);
+
     while (offset < count) {
         const nodes = await storageManager.Nodes.findAll({order: [["id", "ASC"]], offset, limit: increment});
 
@@ -132,6 +134,8 @@ async function syncTracingSomaMap() {
     const somaStructureIdentifier = await storageManager.Search.StructureIdentifier.findOne({where: {value: StructureIdentifiers.soma}});
 
     const tracings = await storageManager.Search.Tracing.findAll({});
+
+    debug(`Upsert ${tracings.length} tracing-soma maps`);
 
     await Promise.all(tracings.map(async (t) => {
         const soma = await storageManager.Nodes.findOne({
