@@ -5,6 +5,13 @@ import * as _ from "lodash";
 
 import {PersistentStorageManager} from "./models/databaseConnector";
 
+enum ShareVisibility {
+    DoNotShare = 0,
+    Inherited = 0x01,
+    ShareAllInternal = 0x02,
+    ShareAllExternal = 0x04
+}
+
 const storageManager = PersistentStorageManager.Instance();
 
 const neuronMap = new Map<string, any>();
@@ -49,8 +56,55 @@ async function syncTracingStructures() {
     await simpleSync(storageManager.TracingStructures, storageManager.Search.TracingStructure, "tracing structures");
 }
 
-async function syncNeurons() {
-    const current = await simpleSync(storageManager.Neurons, storageManager.Search.Neuron, "neurons");
+async function syncNeurons(publicOnly: boolean = true) {
+    // const current = await simpleSync(storageManager.Neurons, storageManager.Search.Neuron, "neurons");
+
+    const samples = await storageManager.Samples.findAll({
+        where: {
+            sharing: ShareVisibility.ShareAllExternal
+        }
+    });
+
+    const injections = await storageManager.Injections.findAll({
+        where: {
+            sampleId: {
+                $in: samples.map(s => s.id)
+            }
+        }
+    });
+
+    const input = await storageManager.Neurons.findAll({
+        where: {
+            $and: [{
+                injectionId: {
+                    $in: injections.map(s => s.id)
+                },
+                $or: [
+                    {sharing: ShareVisibility.ShareAllExternal},
+                    {sharing: ShareVisibility.Inherited}
+                ]
+            }]
+        }
+    });
+
+    const output = await storageManager.Search.Neuron.findAll({});
+
+    debug(`Upsert ${input.length} neurons`);
+
+    const current = await Promise.all(input.map(async (b) => {
+        const pojo = b.toJSON();
+
+        await storageManager.Search.Neuron.upsert(pojo);
+
+        return pojo;
+    }));
+
+    const toRemove = _.differenceBy(output, input, "id");
+
+    if (toRemove.length > 0) {
+        debug(`Remove ${input.length} stale ${name}`);
+        await storageManager.Search.Neuron.destroy({where: {id: {$in: toRemove.map(r => r.id)}}});
+    }
 
     await Promise.all(current.map(async (n: any) => {
         let brainArea = null;
@@ -73,23 +127,35 @@ async function syncNeurons() {
     neurons.map(n => {
         neuronMap.set(n.id, n);
     });
+
+    return neurons;
 }
 
 async function syncTracings() {
-    const inTracings = await storageManager.Tracings.findAll({});
+    const inTracings = await storageManager.Tracings.findAll({
+        where: {}
+    });
 
     const outTracings = await storageManager.Search.Tracing.findAll({});
 
     debug(`Upsert ${inTracings.length} tracings`);
+
     await Promise.all(inTracings.map(async (t) => {
         const obj = t.toJSON();
 
         const swcTracing = await storageManager.SwcTracings.findById(t.swcTracingId);
-        const neuron = await storageManager.Neurons.findById(swcTracing.neuronId);
-        obj.neuronId = neuron.id;
-        obj.tracingStructureId = swcTracing.tracingStructureId;
 
-        await storageManager.Search.Tracing.upsert(obj);
+        if (neuronMap.has(swcTracing.neuronId)) {
+            obj.neuronId = swcTracing.neuronId;
+            obj.tracingStructureId = swcTracing.tracingStructureId;
+
+            await storageManager.Search.Tracing.upsert(obj);
+
+            return obj.id;
+        } else {
+            // TODO Delete if present
+            return null;
+        }
     }));
 
     await storageManager.Search.TracingSomaMap.destroy({where: {}});
@@ -111,16 +177,23 @@ async function syncTracings() {
 }
 
 async function syncNodes() {
+    const tracingIds = Array.from(tracingsMap.keys());
+
     const increment = 10000;
 
-    const count = await storageManager.Nodes.count();
+    const count = await storageManager.Nodes.count({where: {tracingId: {$in: tracingIds}}});
 
     let offset = 0;
 
     debug(`Syncing ${count} nodes`);
 
     while (offset < count) {
-        const nodes = await storageManager.Nodes.findAll({order: [["id", "ASC"]], offset, limit: increment});
+        const nodes = await storageManager.Nodes.findAll({
+            order: [["id", "ASC"]],
+            offset,
+            limit: increment,
+            where: {tracingId: {$in: tracingIds}}
+        });
 
         await storageManager.Search.TracingNode.bulkCreate(nodes.map(n => n.toJSON()));
 
@@ -157,7 +230,7 @@ async function syncTracingSomaMap() {
 }
 
 async function syncNeuronBrainCompartmentMaps() {
-    const input = await storageManager.BrainCompartment.findAll({});
+    const input = await storageManager.BrainCompartment.findAll({where: {tracingId: {$in: Array.from(tracingsMap.keys())}}});
 
     debug(`Upsert ${input.length} neuron brain area maps`);
 
@@ -211,7 +284,8 @@ async function syncNeuronBrainCompartmentMaps() {
     }
 }
 
-async function simpleSync(srcModel, dstModel, name) {
+async function simpleSync(srcModel, dstModel, name: string) {
+
     const input = await srcModel.findAll({});
 
     const output = await dstModel.findAll({});

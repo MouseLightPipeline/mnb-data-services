@@ -106,7 +106,7 @@ export const Databases: IDatabases<IConnectionOptions> = {
     },
     search: {
         development: {
-            database: "search_development",
+            database: "search_production",
             username: "postgres",
             host: "search-db",
             port: 5432,
