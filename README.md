@@ -59,17 +59,17 @@ Restoring to a development environment.  When run inside a test or production co
 
 ## Export
 Export is used to generate the downloadable SWC and JSON neuron files from the search service rather than repeatedly generating
-them on the fly.  This should be used any time the optimized search database is updated with new neurons/tracings.
+them on the fly.  This should be used any time the optimized search database is updated with new neurons/tracings. The volume mapping below for output is just an example when on the current setup on ml-ubuntu-test.
 
 There is no pre-made script for export.  To run, start an interactive session connected to the system for the export.
 
-`docker run -it --rm --network ndb_back_tier -e NODE_ENV=production mouselightdatabrowser/data /bin/bash`
+`docker run -it --rm --network ndb_back_tier -e NODE_ENV=production -v ~/mouselight/ne-system-prod:/opt/data mouselightdatabrowser/data /bin/bash`
 
 assuming a typical setup with the ndb_back_tier network.
 
 From there, navigate to the `export` directory and use
 
-`npm run generate`
+`npm run generate /opt/data`
 
 ## Optimized Search
 This functionality transforms tracings and any associated data required for the search service into a format more suitable
@@ -98,3 +98,28 @@ There is no pre-made script.  To use, start an interactive session
 From there, navigate to the `synthetic` directory and use
 
 `npm run generate`
+
+## Step-By-Step Update of Public Dataset
+#### On the Internal Production System
+
+* Make sure all samples and neurons are marked public/internal/inherited/private as desired
+* If the search table schemas have changed
+    * `docker pull` the latest version of the mouselightdatabrowser/data, /search-api, and /search-client containers
+* `git pull` in the deployment directory (currently ~/mouselight/ne-system-prod on ml-ubuntu-test)
+* Drop all of the tables in the search database instance
+* Use `./migrate.sh` in the deployment directory
+* Perform the `Optimized Search` section above and wait until it fully completes (need all nodes in the database for the next step
+* Use `docker` to stop and restart search-api and search-client and verify the contents are correct and functional in the production viewer for what is expected on the public viewer
+* Perform the `Backup` section above
+* `scp` the data dump file to /data/import on the public machine
+* Perform the `Export` section above
+    * `tar` the json and swc ouput directories
+    * `scp` them to /data/export on the public machine
+* On the public machine
+    * `docker pull` the latest version of the mouselightdatabrowser/data, /search-api, and /search-client containers
+    * `git pull` the latest of the deploy-public deployment repository (currently in /data/ne-deploy-public)
+    * drop all tables from the search_production database
+    * use psql in the data container to load the data dump file
+    * restart the system (./down.sh, ./up.sh)
+    * wait for the search-api backends to finish caching the tracings and test
+  
