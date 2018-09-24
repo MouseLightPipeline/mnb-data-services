@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 const csv = require("csv");
 
-import {migrateSampleDatabase, SampleConnector, seed} from "ndb-data-models";
+import {migrate, seed} from "ndb-data-models";
 import {Databases} from "./options/databaseOptions";
 import {isNullOrUndefined} from "util";
 
@@ -24,7 +24,7 @@ if (process.argv.length > 2) {
 }
 
 export async function migrateSample() {
-    await migrateSampleDatabase(loadConfiguration());
+    migrate(loadConfiguration(), path.normalize("./migrations"));
 }
 
 export async function seedSample() {

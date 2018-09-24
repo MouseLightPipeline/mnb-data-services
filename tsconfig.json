@@ -5,12 +5,9 @@
     "target": "es6",
     "sourceMap": true,
     "alwaysStrict": true,
-    "noImplicitAny": true
+    "skipLibCheck": true
   },
-  "include": [
-    "./**/*.ts"
-  ],
   "exclude": [
-    "node_modules"
+    "docker/node_modules"
   ]
 }

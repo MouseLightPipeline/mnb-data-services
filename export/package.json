@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "Management of exported data.",
   "author": "Patrick Edson <pedson@leapscientific.com>",
-  "license": "Janelia",
+  "private": true,
   "main": "index.js",
+  "license": "SEE LICENSE IN ../LICENSE",
   "scripts": {
     "migrate": "node index.js migrate",
     "generate": "DEBUG=ndb* node --trace-warnings --max_old_space_size=4096 $NODE_DEBUG_OPTION index.js generate"
