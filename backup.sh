@@ -17,25 +17,25 @@ fi
 
 cd backups
 
-npm run backup -- ./sampleDatabaseOptions ${BACKUP_VOL} sample
+npm run backup -- ${BACKUP_VOL} sample
 
 if [ ! -z "$1" ]
   then
     export DATABASE_PORT=5433
 fi
 
-npm run backup -- ../swc/options/databaseOptions ${BACKUP_VOL} swc
+npm run backup -- ${BACKUP_VOL} swc
 
 if [ ! -z "$1" ]
   then
     export DATABASE_PORT=5434
 fi
 
-npm run backup -- ../transform/options/databaseOptions ${BACKUP_VOL} transform
+npm run backup -- ${BACKUP_VOL} transform
 
 if [ ! -z "$1" ]
   then
     export DATABASE_PORT=5435
 fi
 
-npm run backup -- ../search/src/options/databaseOptions ${BACKUP_VOL} search
+npm run backup -- ${BACKUP_VOL} search
