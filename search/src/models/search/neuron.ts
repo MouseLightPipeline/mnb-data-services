@@ -47,8 +47,8 @@ export function sequelizeImport(sequelize: Sequelize, DataTypes: DataTypes): any
                     foreignKey: {name: "brainAreaId", allowNull: true},
                     as: "brainArea"
                 });
-                Neuron.hasMany(models.Tracing, {foreignKey: "neuronId"});
-                Neuron.hasMany(models.NeuronBrainAreaMap, {foreignKey: "neuronId"});
+                Neuron.hasMany(models.Tracing, {foreignKey: "neuronId", onDelete: "cascade", hooks: true});
+                Neuron.hasMany(models.NeuronBrainAreaMap, {foreignKey: "neuronId", onDelete: "cascade", hooks: true});
             }
         },
         timestamps: false,

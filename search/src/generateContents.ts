@@ -14,9 +14,7 @@ enum ShareVisibility {
     ShareAllExternal = 0x04
 }
 
-interface IModelWithId {
-    id: string;
-}
+const NODE_INSERT_INCREMEMNT = 25000;
 
 const storageManager = PersistentStorageManager.Instance();
 
@@ -24,9 +22,12 @@ const neuronMap = new Map<string, any>();
 
 const tracingsMap = new Map<string, any>();
 
+let neuronRemoveIds: string[] = [];
+let tracingRemoveIds: string[] = [];
+
 let minVisibilityLevel = ShareVisibility.ShareAllExternal;
 
-export async function generateContents(visibility: string = null) {
+export async function generateContents(visibility: string = "") {
 
     switch (visibility.toLowerCase()) {
         case "public":
@@ -39,9 +40,9 @@ export async function generateContents(visibility: string = null) {
             minVisibilityLevel = ShareVisibility.DoNotShare;
             break;
     }
+    debug(`updating using minimum visibility of ${minVisibilityLevel}`);
 
     try {
-
         await storageManager.whenReady();
 
         await syncBrainAreas();
@@ -59,6 +60,12 @@ export async function generateContents(visibility: string = null) {
         await syncTracingSomaMap();
 
         await syncNeuronBrainCompartmentMaps();
+
+        await removeBrainAreaMaps();
+
+        await removeTracings();
+
+        await removeNeurons();
     } catch (err) {
         debug(err);
     }
@@ -113,7 +120,7 @@ async function syncNeurons() {
 
     const output: INeuron[] = await storageManager.Search.Neuron.findAll({});
 
-    debug(`Upsert ${input.length} neurons`);
+    debug(`upsert ${input.length} neurons`);
 
     const current = await Promise.all(input.map(async (b) => {
         const pojo = b.toJSON();
@@ -122,13 +129,6 @@ async function syncNeurons() {
 
         return pojo;
     }));
-
-    const toRemove = _.differenceBy(output, input, "id");
-
-    if (toRemove.length > 0) {
-        debug(`Remove ${input.length} stale ${name}`);
-        await storageManager.Search.Neuron.destroy({where: {id: {$in: toRemove.map(r => r.id)}}});
-    }
 
     await Promise.all(current.map(async (n: any) => {
         let brainArea = null;
@@ -146,23 +146,25 @@ async function syncNeurons() {
         await storageManager.Search.Neuron.upsert(n);
     }));
 
-    const neurons = await storageManager.Search.Neuron.findAll({});
-
-    neurons.map(n => {
+    input.map(n => {
         neuronMap.set(n.id, n);
     });
 
-    return neurons;
+    neuronRemoveIds = _.differenceBy(output, input, "id").map(r => r.id);
+
+    debug(`${neuronRemoveIds.length} neuron(s) pending removal`);
 }
 
 async function syncTracings() {
+    // Tracings are once removed from neurons via the swc tracing.  Load all tracings, map to the swc tracing, and then
+    // only use those tracings that map back to included neurons
     const inTracings = await storageManager.Tracings.findAll({
         where: {}
     });
 
-    const outTracings: ITracing[] = await storageManager.Search.Tracing.findAll({});
+    debug(`evaluating ${inTracings.length} tracings`);
 
-    debug(`Upsert ${inTracings.length} tracings`);
+    const existingTracings: ITracing[] = await storageManager.Search.Tracing.findAll({});
 
     await Promise.all(inTracings.map(async (t) => {
         const obj = t.toJSON();
@@ -175,35 +177,23 @@ async function syncTracings() {
 
             await storageManager.Search.Tracing.upsert(obj);
 
-            return obj.id;
-        } else {
-            // TODO Delete if present
-            return null;
+            tracingsMap.set(obj.id, obj);
         }
     }));
 
-    await storageManager.Search.TracingSomaMap.destroy({where: {}});
+    debug(`identified ${tracingsMap.size} tracings from ${neuronMap.size} neurons`);
 
+    // Rather than sync removals later, drop all the rows and regenerate in next steps.
+    await storageManager.Search.TracingSomaMap.destroy({where: {}});
     await storageManager.Search.TracingNode.destroy({where: {}});
 
-    const toRemove = _.differenceBy(outTracings, inTracings, "id");
+    tracingRemoveIds = _.differenceBy(existingTracings, Array.from(tracingsMap.values()), "id").map(r => r.id);
 
-    if (toRemove.length > 0) {
-        debug(`Remove ${toRemove.length} stale tracings`);
-        await storageManager.Search.Tracing.destroy({where: {id: {$in: toRemove.map(r => r.id)}}});
-    }
-
-    const tracings = await storageManager.Search.Tracing.findAll({});
-
-    tracings.map(t => {
-        tracingsMap.set(t.id, t);
-    });
+    debug(`${tracingRemoveIds.length} tracing(s) pending removal`);
 }
 
 async function syncNodes() {
     const tracingIds = Array.from(tracingsMap.keys());
-
-    const increment = 10000;
 
     const count = await storageManager.Nodes.count({where: {tracingId: {$in: tracingIds}}});
 
@@ -215,7 +205,7 @@ async function syncNodes() {
         const nodes = await storageManager.Nodes.findAll({
             order: [["id", "ASC"]],
             offset,
-            limit: increment,
+            limit: NODE_INSERT_INCREMEMNT,
             where: {tracingId: {$in: tracingIds}}
         });
 
@@ -223,7 +213,7 @@ async function syncNodes() {
 
         debug(offset + nodes.length);
 
-        offset += increment;
+        offset += NODE_INSERT_INCREMEMNT;
     }
 }
 
@@ -298,38 +288,74 @@ async function syncNeuronBrainCompartmentMaps() {
         await storageManager.Search.NeuronBrainAreaMap.upsert(obj);
     }));
 
-    const output: IModelWithId[] = await storageManager.Search.NeuronBrainAreaMap.findAll({});
+    //  const output: IModelWithId[] = await storageManager.Search.NeuronBrainAreaMap.findAll({});
 
-    const toRemove = _.differenceBy(output, input, "id");
+    //  const toRemove = _.differenceBy(output, input, "id");
 
-    if (toRemove.length > 0) {
-        debug(`Remove ${toRemove.length} neuron brain area maps`);
-        await storageManager.Search.NeuronBrainAreaMap.destroy({where: {id: {$in: toRemove.map(r => r.id)}}});
-    }
+    // if (toRemove.length > 0) {
+    //     debug(`Remove ${toRemove.length} neuron brain area maps`);
+    //    await storageManager.Search.NeuronBrainAreaMap.destroy({where: {id: {$in: toRemove.map(r => r.id)}}});
+    // }
 }
 
 async function simpleSync(srcModel, dstModel, name: string) {
     const input = await srcModel.findAll({});
 
-    const output: IModelWithId[] = await dstModel.findAll({});
-
     debug(`Upsert ${input.length} ${name}`);
-    const current = await Promise.all(input.map(async (b) => {
-        const pojo = b.toJSON();
 
-        await dstModel.upsert(pojo);
-
-        return pojo;
+    await Promise.all(input.map(async (b) => {
+        await dstModel.upsert(b.toJSON());
     }));
+}
 
-    const toRemove = _.differenceBy(output, input, "id");
-
-    if (toRemove.length > 0) {
-        debug(`Remove ${input.length} stale ${name}`);
-        await dstModel.destroy({where: {id: {$in: toRemove.map(r => r.id)}}});
+async function removeBrainAreaMaps() {
+    if (tracingRemoveIds.length === 0 && neuronRemoveIds.length === 0) {
+        return;
     }
 
-    return current;
+    await storageManager.Search.NeuronBrainAreaMap.destroy({
+        where: {
+            $or: [
+                {
+                    tracingId: {
+                        $in: tracingRemoveIds
+                    }
+                }, {
+                    neuronId: {
+                        $in: neuronRemoveIds
+                    }
+                }
+            ]
+        }
+    });
+}
+
+async function removeTracings() {
+    if (tracingRemoveIds.length === 0) {
+        return;
+    }
+
+    await storageManager.Search.Tracing.destroy({
+        where: {
+            id: {
+                $in: tracingRemoveIds
+            }
+        }
+    });
+}
+
+async function removeNeurons() {
+    if (neuronRemoveIds.length === 0) {
+        return;
+    }
+
+    await storageManager.Search.Neuron.destroy({
+        where: {
+            id: {
+                $in: neuronRemoveIds
+            }
+        }
+    });
 }
 
 async function getBrainArea(id: string) {

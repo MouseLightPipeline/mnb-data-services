@@ -16,8 +16,9 @@ export function sequelizeImport(sequelize, DataTypes) {
     }, {
         classMethods: {
             associate: models => {
-                Tracing.hasMany(models.TracingNode, {foreignKey: "tracingId", as: "nodes"});
-                Tracing.hasMany(models.NeuronBrainAreaMap, {foreignKey: "tracingId"});
+                Tracing.hasMany(models.TracingNode, {foreignKey: "tracingId", as: "nodes", onDelete: "cascade", hooks: true});
+                Tracing.hasMany(models.NeuronBrainAreaMap, {foreignKey: "tracingId", onDelete: "cascade", hooks: true});
+                Tracing.hasMany(models.TracingSomaMap, {foreignKey: "tracingId", onDelete: "cascade", hooks: true});
                 Tracing.belongsTo(models.Neuron, {foreignKey: "neuronId"});
                 Tracing.belongsTo(models.TracingStructure, {foreignKey: "tracingStructureId"});
             }

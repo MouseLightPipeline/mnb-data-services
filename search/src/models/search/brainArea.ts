@@ -26,7 +26,7 @@ export function sequelizeImport(sequelize, DataTypes) {
     }, {
         classMethods: {
             associate: (models: any) => {
-                // BrainArea.hasMany(models.Neuron, {foreignKey: "brainAreaId", as: "neurons"});
+                BrainArea.hasMany(models.Neuron, {foreignKey: "brainAreaId", as: "neurons"});
             }
         },
         timestamps: false,
