@@ -52,6 +52,6 @@ RUN cd /apps/synthetic; yarn install
 RUN cd /apps/synthetic; tsc
 
 RUN cd /apps/search; yarn install
-RUN cd /apps/seardh; tsc
+RUN cd /apps/search; tsc
 
 CMD ["/apps/backup.sh"]

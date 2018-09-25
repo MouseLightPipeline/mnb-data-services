@@ -13,7 +13,7 @@ if (process.argv.length > 2) {
             seedTransform();
             break;
         case "generate":
-            generateContents();
+            generateContents(process.argv[3]);
             break;
     }
 }

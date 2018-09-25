@@ -4,6 +4,8 @@ const debug = require("debug")("ndb:data:search:generate-contents");
 import * as _ from "lodash";
 
 import {PersistentStorageManager} from "./models/databaseConnector";
+import {INeuron} from "ndb-data-models";
+import {ITracing} from "./models/transform/tracing";
 
 enum ShareVisibility {
     DoNotShare = 0,
@@ -12,13 +14,31 @@ enum ShareVisibility {
     ShareAllExternal = 0x04
 }
 
+interface IModelWithId {
+    id: string;
+}
+
 const storageManager = PersistentStorageManager.Instance();
 
 const neuronMap = new Map<string, any>();
 
 const tracingsMap = new Map<string, any>();
 
-export async function generateContents() {
+let minVisibilityLevel = ShareVisibility.ShareAllExternal;
+
+export async function generateContents(visibility: string = null) {
+
+    switch (visibility.toLowerCase()) {
+        case "public":
+            minVisibilityLevel = ShareVisibility.ShareAllExternal;
+            break;
+        case "internal":
+            minVisibilityLevel = ShareVisibility.ShareAllInternal;
+            break;
+        case "all":
+            minVisibilityLevel = ShareVisibility.DoNotShare;
+            break;
+    }
 
     try {
 
@@ -56,12 +76,12 @@ async function syncTracingStructures() {
     await simpleSync(storageManager.TracingStructures, storageManager.Search.TracingStructure, "tracing structures");
 }
 
-async function syncNeurons(publicOnly: boolean = true) {
-    // const current = await simpleSync(storageManager.Neurons, storageManager.Search.Neuron, "neurons");
-
+async function syncNeurons() {
     const samples = await storageManager.Samples.findAll({
         where: {
-            sharing: ShareVisibility.ShareAllExternal
+            sharing: {
+                $gte: minVisibilityLevel
+            }
         }
     });
 
@@ -80,14 +100,18 @@ async function syncNeurons(publicOnly: boolean = true) {
                     $in: injections.map(s => s.id)
                 },
                 $or: [
-                    {sharing: ShareVisibility.ShareAllExternal},
+                    {
+                        sharing: {
+                            $gte: minVisibilityLevel
+                        }
+                    },
                     {sharing: ShareVisibility.Inherited}
                 ]
             }]
         }
     });
 
-    const output = await storageManager.Search.Neuron.findAll({});
+    const output: INeuron[] = await storageManager.Search.Neuron.findAll({});
 
     debug(`Upsert ${input.length} neurons`);
 
@@ -136,7 +160,7 @@ async function syncTracings() {
         where: {}
     });
 
-    const outTracings = await storageManager.Search.Tracing.findAll({});
+    const outTracings: ITracing[] = await storageManager.Search.Tracing.findAll({});
 
     debug(`Upsert ${inTracings.length} tracings`);
 
@@ -274,21 +298,20 @@ async function syncNeuronBrainCompartmentMaps() {
         await storageManager.Search.NeuronBrainAreaMap.upsert(obj);
     }));
 
-    const output = await storageManager.Search.NeuronBrainAreaMap.findAll({});
+    const output: IModelWithId[] = await storageManager.Search.NeuronBrainAreaMap.findAll({});
 
     const toRemove = _.differenceBy(output, input, "id");
 
     if (toRemove.length > 0) {
         debug(`Remove ${toRemove.length} neuron brain area maps`);
-        await  storageManager.Search.NeuronBrainAreaMap.destroy({where: {id: {$in: toRemove.map(r => r.id)}}});
+        await storageManager.Search.NeuronBrainAreaMap.destroy({where: {id: {$in: toRemove.map(r => r.id)}}});
     }
 }
 
 async function simpleSync(srcModel, dstModel, name: string) {
-
     const input = await srcModel.findAll({});
 
-    const output = await dstModel.findAll({});
+    const output: IModelWithId[] = await dstModel.findAll({});
 
     debug(`Upsert ${input.length} ${name}`);
     const current = await Promise.all(input.map(async (b) => {
