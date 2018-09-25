@@ -1,4 +1,4 @@
-FROM node:8.12.0
+FROM node:8.12
 
 RUN cd /tmp; wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0-patch1/src/hdf5-1.10.0-patch1.tar.gz
 RUN cd /tmp; tar xvzf hdf5-1.10.0-patch1.tar.gz
@@ -50,5 +50,8 @@ RUN cd /apps/backups; tsc
 
 RUN cd /apps/synthetic; yarn install
 RUN cd /apps/synthetic; tsc
+
+RUN cd /apps/search; yarn install
+RUN cd /apps/seardh; tsc
 
 CMD ["/apps/backup.sh"]
