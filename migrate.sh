@@ -7,9 +7,6 @@ fi
 
 echo "Perform migrate for all databases."
 
-cd "./sample"
-npm run migrate
-
 cd "../swc"
 npm run migrate
 

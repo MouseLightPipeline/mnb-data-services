@@ -36,9 +36,6 @@ RUN yarn global add typescript node-gyp
 # Bundle apps
 COPY . .
 
-RUN cd /apps/sample; yarn install
-RUN cd /apps/sample; tsc
-
 RUN cd /apps/swc; yarn install
 RUN cd /apps/swc; tsc
 

@@ -8,6 +8,6 @@
     "skipLibCheck": true
   },
   "exclude": [
-    "docker/node_modules"
+    "node_modules"
   ]
 }

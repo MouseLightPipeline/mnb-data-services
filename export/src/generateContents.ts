@@ -1,4 +1,4 @@
-import * as fs from "fs";
+import * as fs from "fs-extra";
 import * as path from "path";
 import * as _ from "lodash";
 
@@ -23,6 +23,14 @@ let dendriteId = null;
 export async function generateContents(outputLocation: string) {
     try {
         await storageManager.whenReady();
+
+        try {
+            await fs.ensureDir(path.join(outputLocation, "swc"));
+            await fs.ensureDir(path.join(outputLocation, "json"));
+        } catch (err) {
+            console.log(err);
+            return;
+        }
 
         let s = await storageManager.Search.TracingStructure.findOne({where: {value: TracingStructure.axon}});
         pathStructureMap.set(s.id, 2);

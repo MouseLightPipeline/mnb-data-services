@@ -17,7 +17,7 @@ fi
 
 cd backups
 
-npm run backup -- ../sample/options/databaseOptions ${BACKUP_VOL} sample
+npm run backup -- ./sampleDatabaseOptions ${BACKUP_VOL} sample
 
 if [ ! -z "$1" ]
   then

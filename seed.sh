@@ -25,9 +25,6 @@ if [ ! -z "$1" ]
     export DATABASE_HOST=$1
 fi
 
-cd "./sample"
-npm run seed
-
 if [ ! -z "$1" ]
   then
     export DATABASE_PORT=5433

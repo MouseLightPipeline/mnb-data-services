@@ -11,12 +11,14 @@
     "generate": "DEBUG=ndb* node --trace-warnings --max_old_space_size=4096 $NODE_DEBUG_OPTION index.js generate"
   },
   "dependencies": {
+    "fs-extra": "^7.0.0",
     "lodash": "^4.17.4",
     "mssql": "^4.1.0",
     "ndb-data-models": "^0.8.9"
   },
   "devDependencies": {
     "@types/debug": "^0.0.30",
+    "@types/fs-extra": "^5.0.4",
     "@types/lodash": "^4.14.78",
     "@types/node": "^7.0.8",
     "@types/sequelize": "^4.0.53",
