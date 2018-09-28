@@ -1,13 +1,13 @@
 {
-  "name": "mnb-data",
-  "version": "1.0.11",
+  "name": "mnb-data-services",
+  "version": "1.4.0",
+  "private": true,
   "description": "Management of data volumes.  Migration and backup.",
   "author": "Patrick Edson <pedson@leapscientific.com>",
-  "license": "Janelia",
+  "license": "SEE LICENSE IN LICENSE",
   "main": "index.js",
-  "private": true,
   "dockerRepository": "mouselightdatabrowser",
-  "dockerImageName": "data",
+  "dockerImageName": "data-services",
   "scripts": {
     "docker-build": "cd docker && npm run docker-build",
     "release": "cd docker && npm run release"

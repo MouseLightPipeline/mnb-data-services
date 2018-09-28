@@ -42,9 +42,6 @@ RUN cd /apps/swc; tsc
 RUN cd /apps/transform; yarn install
 RUN cd /apps/transform; tsc
 
-RUN cd /apps/influx; yarn install
-RUN cd /apps/influx; tsc
-
 RUN cd /apps/backups; yarn install
 RUN cd /apps/backups; tsc
 

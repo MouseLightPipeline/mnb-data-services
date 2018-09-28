@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Synthetic data creation and loading",
   "author": "Patrick Edson <pedson@leapscientific.com>",
-  "license": "Janelia",
+  "license": "SEE LICENSE IN ../LICENSE",
   "main": "index.js",
   "scripts": {
     "generate": "node $NODE_DEBUG_OPTION index.js"

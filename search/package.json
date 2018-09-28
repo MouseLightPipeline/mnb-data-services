@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Management of data volumes.  Migration and backup.",
   "author": "Patrick Edson <pedson@leapscientific.com>",
-  "license": "Janelia",
+  "license": "SEE LICENSE IN ../LICENSE",
   "main": "index.js",
   "scripts": {
     "migrate": "node index.js migrate",
@@ -11,7 +11,6 @@
   },
   "dependencies": {
     "lodash": "^4.17.4",
-    "mssql": "^4.1.0",
     "ndb-data-models": "^0.8.8"
   },
   "devDependencies": {
