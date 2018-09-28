@@ -2,40 +2,20 @@
 
 echo "Perform backup of all databases."
 
-if [ -z ${PGPASSWORD} ]; then
-    export PGPASSWORD="pgsecret"
-fi
-
-if [ -z ${BACKUP_VOL} ]; then
-    export BACKUP_VOL="/opt/data/backups"
-fi
-
-if [ ! -z "$1" ]
-  then
-    export DATABASE_HOST=$1
-fi
-
 cd backups
 
-npm run backup -- ${BACKUP_VOL} sample
+npm run backup -- sample
 
-if [ ! -z "$1" ]
-  then
-    export DATABASE_PORT=5433
-fi
+wait
 
-npm run backup -- ${BACKUP_VOL} swc
+npm run backup -- swc
 
-if [ ! -z "$1" ]
-  then
-    export DATABASE_PORT=5434
-fi
+wait
 
-npm run backup -- ${BACKUP_VOL} transform
+npm run backup -- transform
 
-if [ ! -z "$1" ]
-  then
-    export DATABASE_PORT=5435
-fi
+wait
 
-npm run backup -- ${BACKUP_VOL} search
+npm run backup -- search
+
+wait

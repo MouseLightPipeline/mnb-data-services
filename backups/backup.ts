@@ -5,8 +5,9 @@ const moment = require("moment");
 
 import {DatabaseOptions} from "./databaseOptions";
 
-const outputLoc = process.argv[2];
-const databaseName = process.argv[3];
+const outputLoc = process.env.BACKUP_PATH || "/opt/data/backups";
+
+const databaseName = process.argv[2];
 
 const options = loadConfiguration(databaseName);
 

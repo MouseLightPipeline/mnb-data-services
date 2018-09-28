@@ -92,7 +92,9 @@ export = {
                         model: BrainAreasTable,
                         key: "id"
                     }
-                }
+                },
+                createdAt: Sequelize.DATE,
+                updatedAt: Sequelize.DATE,
             });
 
         await queryInterface.addIndex(NeuronsTable, ["brainAreaId"]);
@@ -148,7 +150,9 @@ export = {
                         model: NeuronsTable,
                         key: "id"
                     }
-                }
+                },
+                createdAt: Sequelize.DATE,
+                updatedAt: Sequelize.DATE,
             });
 
         await queryInterface.addIndex(TracingsTable, ["neuronId"]);

@@ -56,7 +56,6 @@ gulp.task("docker-push", ["docker-build"], shell.task([
     ])
 );
 
-
 function versionMajorMinor(version: string) {
     const parts = version.split(".");
 
