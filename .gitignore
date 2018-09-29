@@ -1,7 +1,5 @@
 # Logs
-logs
 *.log
-npm-debug.log*
 
 # Optional npm cache directory
 .npm
@@ -13,8 +11,8 @@ npm-debug.log*
 
 node_modules
 
-secrets.config.*
-
 *.js
 *.js.map
+
+dist
 

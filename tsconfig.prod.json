@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig",
+  "compileOnSave": false,
+  "compilerOptions": {
+    "outDir": "dist",
+    "sourceMap": false
+  },
+  "exclude": [
+    "migrations",
+    "gulpfile.ts"
+  ]
+}

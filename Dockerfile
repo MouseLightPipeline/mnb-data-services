@@ -30,25 +30,8 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-k
 
 WORKDIR /apps
 
-# Install production app dependencies
-RUN yarn global add typescript node-gyp
+COPY dist .
 
-# Bundle apps
-COPY . .
+RUN yarn install --production=true
 
-RUN cd /apps/swc; yarn install
-RUN cd /apps/swc; tsc
-
-RUN cd /apps/transform; yarn install
-RUN cd /apps/transform; tsc
-
-RUN cd /apps/backups; yarn install
-RUN cd /apps/backups; tsc
-
-RUN cd /apps/synthetic; yarn install
-RUN cd /apps/synthetic; tsc
-
-RUN cd /apps/search; yarn install
-RUN cd /apps/search; tsc
-
-CMD ["/apps/backup.sh"]
+CMD ["./docker-entry.sh"]

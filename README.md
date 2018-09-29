@@ -20,19 +20,9 @@ There are currently five databases in the complete system:
 * "Metrics database" - Contains information on searches and query performance
 
 General behavior:
-* All five databases have migrations
-* Only the same and SWC databases are seeded with fixed items
 * All but metrics are backed up with the default script.
-* Export is an function of all but the metrics database
+* Export is requires all but the metrics database
 * The optimized search database should be generated from the first three databases any time new tracings are to be pushed to the search service
-
-## Migration
-`migrate.sh` should be run anytime one of the database schemas is modified.
-
-## Seeding
-`seed.sh` should only be run when initializing a new system for the first time after the first migration.  There are
-currently no protections against running the seeding twice on the same database, other than multiple interactive 
-confirmations in the script itself
 
 ## Backup
 `backup.sh` is the default script of the container.  It generates backups of the data in the first four databases.  It

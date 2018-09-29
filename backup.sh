@@ -2,8 +2,6 @@
 
 echo "Perform backup of all databases."
 
-cd backups
-
 npm run backup -- sample
 
 wait

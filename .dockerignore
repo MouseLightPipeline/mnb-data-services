@@ -1,6 +1,0 @@
-Dockerfile
-README.md
-.gitignore
-*/node_modules
-**/*.js
-**/*.js.map
