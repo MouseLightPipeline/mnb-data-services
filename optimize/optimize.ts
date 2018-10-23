@@ -25,6 +25,10 @@ const neuronMap = new Map<string, any>();
 
 const tracingsMap = new Map<string, any>();
 
+const tracingsSomaMap = new Map<string, any>();
+
+const tracingsSomaMapMap = new Map<string, any>();
+
 let neuronRemoveIds: string[] = [];
 let tracingRemoveIds: string[] = [];
 
@@ -252,10 +256,14 @@ async function syncTracingSomaMap() {
         });
 
         if (soma) {
-            storageManager.Search.TracingSomaMap.create({
+            tracingsSomaMap.set(t.id, soma);
+
+            const obj = await storageManager.Search.TracingSomaMap.create({
                 tracingId: t.id,
                 somaId: soma.id,
             });
+
+            tracingsSomaMapMap.set(t.id, obj);
         } else {
             debug(`No soma for tracing ${t.id}`);
         }
@@ -267,8 +275,7 @@ async function syncNeuronBrainCompartmentMaps() {
 
     debug(`Upsert ${input.length} neuron brain compartment maps`);
 
-    /*
-    await Promise.all(input.map(async (c) => {
+    const objs = await Promise.all(input.map(async (c) => {
         const obj = c.toJSON();
 
         const tracing = tracingsMap.get(c.tracingId);
@@ -282,10 +289,12 @@ async function syncNeuronBrainCompartmentMaps() {
             return;
         }
 
-        const map = await storageManager.Search.TracingSomaMap.findOne({where: {tracingId: tracing.id}});
+        // const map = await storageManager.Search.TracingSomaMap.findOne({where: {tracingId: tracing.id}});
+        const map = tracingsSomaMapMap.get(tracing.id);
 
         if (map) {
-            const node = await storageManager.Search.TracingNode.findById(map.somaId);
+            // const node = await storageManager.Search.TracingNode.findById(map.somaId);
+            const node = tracingsSomaMap.get(tracing.id);
 
             obj.somaX = node.x;
             obj.somaY = node.y;
@@ -301,10 +310,16 @@ async function syncNeuronBrainCompartmentMaps() {
         obj.neuronIdString = neuron.idString;
         obj.neuronDOI = neuron.doi;
 
-        await storageManager.Search.NeuronBrainAreaMap.upsert(obj);
-    }));
-    */
+        return obj;
 
+        // await storageManager.Search.NeuronBrainAreaMap.upsert(obj);
+    }));
+
+    await objs.reduce(async (promiseChain, obj) => {
+        await storageManager.Search.NeuronBrainAreaMap.upsert(obj);
+    }, Promise.resolve());
+
+    /*
     await input.reduce((promiseChain, c) => {
         return promiseChain.then(async() => {
             const obj = c.toJSON();
@@ -342,9 +357,9 @@ async function syncNeuronBrainCompartmentMaps() {
             await storageManager.Search.NeuronBrainAreaMap.upsert(obj);
         });
     }, Promise.resolve());
+    */
 
     debug(`neuron brain compartment maps complete`);
-
 }
 
 async function simpleSync(srcModel, dstModel, name: string) {

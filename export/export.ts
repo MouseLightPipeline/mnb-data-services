@@ -4,16 +4,17 @@ import * as _ from "lodash";
 
 const debug = require("debug")("ndb:data:search:generate-contents");
 
+import {ServiceOptions} from "../options/serviceOptions";
 import {PersistentStorageManager} from "../models/persistentStorageManager";
-import {ITracing} from "../models/transform/tracing";
-import {ITracingNode} from "../models/transform/tracingNode";
+
 import {IBrainArea} from "../models/sample/brainArea";
 import {INeuron} from "../models/sample/neuron";
 import {IMouseStrain} from "../models/sample/mouseStrain";
 import {ISample} from "../models/sample/sample";
 import {IInjectionVirus} from "../models/sample/injectionVirus";
 import {IFluorophore} from "../models/sample/fluorophore";
-import {ServiceOptions} from "../options/serviceOptions";
+import {ITracing} from "../models/search/tracing";
+import {ITracingNode} from "../models/search/tracingNode";
 import {TracingStructure} from "../models/search/tracingStructure";
 
 const storageManager = PersistentStorageManager.Instance();
@@ -96,10 +97,36 @@ async function processNeuron(neuron: INeuron, outputLocation: string) {
 
     let swc = swcHeader(sample, mouse, injectionVirus, fluorophore, neuron);
 
-    let offset = 0;
+    // let offset = 0;
 
-    const tracings = neuronTracingMap.get(neuron.id);
+    const tracings: ITracing[] = neuronTracingMap.get(neuron.id);
 
+    await tracings.reduce(async (promise: Promise<number>, t: ITracing, index): Promise<number> => {
+        const offset = await promise;
+
+        return new Promise<number>(async (resolve) => {
+            let nodes = await storageManager.Search.TracingNode.findAll({
+                where: {tracingId: t.id},
+                order: [["sampleNumber", "ASC"]]
+            });
+
+            if (index === 0) {
+                const node = nodes[0];
+
+                swc += `${node.sampleNumber}\t${1}\t${node.x.toFixed(6)}\t${node.y.toFixed(6)}\t${node.z.toFixed(6)}\t${node.radius.toFixed(6)}\t${-1}\n`;
+            }
+
+            nodes = nodes.slice(1);
+
+            swc += mapToSwc(nodes, pathStructureMap.get(t.tracingStructureId), offset);
+
+            // offset += nodes.length;
+
+            resolve(offset + nodes.length);
+        });
+    }, Promise.resolve(0));
+
+    /*
     await Promise.all(tracings.map(async (t: any, index: number) => {
         let nodes = await storageManager.Search.TracingNode.findAll({
             where: {tracingId: t.id},
@@ -117,7 +144,7 @@ async function processNeuron(neuron: INeuron, outputLocation: string) {
         swc += mapToSwc(nodes, pathStructureMap.get(t.tracingStructureId), offset);
 
         offset += nodes.length;
-    }));
+    }));*/
 
     fs.writeFileSync(path.join(outputLocation, "swc", neuron.idString + ".swc"), swc);
 

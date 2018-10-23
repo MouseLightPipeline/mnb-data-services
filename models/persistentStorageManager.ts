@@ -2,7 +2,7 @@ const Sequelize = require("sequelize");
 
 const debug = require("debug")("ndb:transform:database-connector");
 
-import {DatabaseOptions} from "../options/databaseOptions"
+import {DatabaseOptions} from "../options/databaseOptions";
 
 import {loadModels} from "./modelLoader";
 

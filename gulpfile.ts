@@ -33,16 +33,16 @@ function createShellTasks(sourceFile) {
 
     const compileTypescript = `tsc -p tsconfig.prod.json`;
 
-    const moveFiles = `cp ./{package.json,yarn.lock,LICENSE,docker-entry.sh,backup.sh} dist`;
+    const moveFiles = `cp ./{package.json,yarn.lock,LICENSE,docker-entry.sh,backup.sh,restore.sh} dist`;
 
     const contents = fs.readFileSync(sourceFile).toString();
 
-    const npmPackage = JSON.parse(contents);
+    const packageFile = JSON.parse(contents);
 
-    const version = npmPackage.version;
+    const version = packageFile.version;
     const [versionMajor, versionMajMin] = versionMajorMinor(version);
-    const repo = npmPackage.dockerRepository;
-    const imageName = npmPackage.dockerImageName || npmPackage.name;
+    const repo = packageFile.dockerRepository;
+    const imageName = packageFile.dockerImageName || packageFile.name;
 
     const dockerRepoImage = `${repo}/${imageName}`;
 

@@ -2,18 +2,18 @@
 
 echo "Perform backup of all databases."
 
-npm run backup -- sample
+yarn run backup sample
 
 wait
 
-npm run backup -- swc
+yarn run backup swc
 
 wait
 
-npm run backup -- transform
+yarn run backup transform
 
 wait
 
-npm run backup -- search
+yarn run backup search
 
 wait

@@ -8,7 +8,7 @@ export const Databases = {
         dialect: "postgres",
         logging: null,
         pool: {
-            max: 5,
+            max: 50,
             min: 0,
             acquire: 20000,
             idle: 10000
@@ -24,7 +24,7 @@ export const Databases = {
         dialect: "postgres",
         logging: null,
         pool: {
-            max: 5,
+            max: 50,
             min: 0,
             acquire: 20000,
             idle: 10000
@@ -40,7 +40,7 @@ export const Databases = {
         dialect: "postgres",
         logging: null,
         pool: {
-            max: 5,
+            max: 50,
             min: 0,
             acquire: 20000,
             idle: 10000
@@ -56,7 +56,7 @@ export const Databases = {
         dialect: "postgres",
         logging: null,
         pool: {
-            max: 5,
+            max: 50,
             min: 0,
             acquire: 20000,
             idle: 10000

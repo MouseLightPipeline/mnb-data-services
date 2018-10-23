@@ -9,6 +9,7 @@
   "dockerImageName": "data-services",
   "scripts": {
     "backup": "DEBUG=mnb:* node $NODE_DEBUG_OPTION backup/backup.js",
+    "restore": "DEBUG=mnb:* node $NODE_DEBUG_OPTION restore/restore.js",
     "export": "DEBUG=mnb:* node $NODE_DEBUG_OPTION export/export.js",
     "optimize": "DEBUG=mnb:* node $NODE_DEBUG_OPTION optimize/optimize.js",
     "synthesize": "DEBUG=mnb:* node $NODE_DEBUG_OPTION synthesize/synthesize.js",

@@ -19,7 +19,7 @@ const databaseName = process.argv[2];
 
 const options = DatabaseOptions[databaseName];
 
-console.log(`Performing backup for database '${databaseName}'.`);
+console.log(`Performing backup for database '${options.database}'.`);
 
 const now = new Date();
 
@@ -36,7 +36,7 @@ if (!fs.existsSync(outputFullPath) && !fs.ensureDirSync(outputFullPath)) {
 
 const outputFile = path.join(outputFullPath, `${databaseName}_${timestamp}.pg.gz`);
 
-const exec_str = `pg_dumpall -h ${options.host} -p ${options.port} -U ${options.username} | gzip > ${outputFile}`;
+const exec_str = `pg_dump -h ${options.host} -p ${options.port} -U ${options.username} ${options.database} | gzip > ${outputFile}`;
 
 console.log(`performing ${exec_str}`);
 
