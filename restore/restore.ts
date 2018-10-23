@@ -44,7 +44,7 @@ const inputFilePath = path.join(inputPath, inputFile);
 
 console.log(`Performing restore for database '${databaseName}' from ${inputFilePath}`);
 
-const exec_str = `psql -h ${options.host} -p ${options.port} -U ${options.username} -f ${inputFilePath}`;
+const exec_str = `psql -h ${options.host} -p ${options.port} -U ${options.username} -d ${options.database} -f ${inputFilePath}`;
 
 console.log(`performing ${exec_str}`);
 
