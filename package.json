@@ -14,7 +14,7 @@
     "optimize": "DEBUG=mnb:* node $NODE_DEBUG_OPTION optimize/optimize.js",
     "synthesize": "DEBUG=mnb:* node $NODE_DEBUG_OPTION synthesize/synthesize.js",
     "docker-build": "gulp docker-build",
-    "release": "gulp release"
+    "docker-release": "gulp release"
   },
   "dependencies": {
     "debug": "^3.1.0",
