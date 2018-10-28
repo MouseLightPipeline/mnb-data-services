@@ -7,6 +7,7 @@ import {PersistentStorageManager} from "../models/persistentStorageManager";
 import {StructureIdentifiers} from "../models/swc/structureIdentifier";
 import {ITracing} from "../models/transform/tracing";
 import {INeuron} from "../models/sample/neuron";
+import {async} from "q";
 
 enum ShareVisibility {
     DoNotShare = 0,
@@ -275,7 +276,7 @@ async function syncNeuronBrainCompartmentMaps() {
 
     debug(`Upsert ${input.length} neuron brain compartment maps`);
 
-    const objs = await Promise.all(input.map(async (c) => {
+    const objs = input.map(c => {
         const obj = c.toJSON();
 
         const tracing = tracingsMap.get(c.tracingId);
@@ -285,8 +286,8 @@ async function syncNeuronBrainCompartmentMaps() {
         if (neuron) {
             obj.neuronId = neuron.id;
         } else {
-            debug(`No neuron for tracing ${tracing.id} referencing ${tracing.neuronId}`);
-            return;
+            debug(`no neuron for tracing ${tracing.id} referencing ${tracing.neuronId}`);
+            return null;
         }
 
         // const map = await storageManager.Search.TracingSomaMap.findOne({where: {tracingId: tracing.id}});
@@ -310,54 +311,22 @@ async function syncNeuronBrainCompartmentMaps() {
         obj.neuronIdString = neuron.idString;
         obj.neuronDOI = neuron.doi;
 
+        if (obj.id === null) {
+            debug(`obj id is null}`);
+        }
+
         return obj;
+    }).filter(s => s !== null);
 
-        // await storageManager.Search.NeuronBrainAreaMap.upsert(obj);
-    }));
+    debug(`${input.length} neuron brain compartment maps remain after removing null`);
 
-    await objs.reduce(async (promiseChain, obj) => {
-        await storageManager.Search.NeuronBrainAreaMap.upsert(obj);
-    }, Promise.resolve());
-
-    /*
-    await input.reduce((promiseChain, c) => {
-        return promiseChain.then(async() => {
-            const obj = c.toJSON();
-
-            const tracing = tracingsMap.get(c.tracingId);
-
-            const neuron = neuronMap.get(tracing.neuronId);
-
-            if (neuron) {
-                obj.neuronId = neuron.id;
-            } else {
-                debug(`No neuron for tracing ${tracing.id} referencing ${tracing.neuronId}`);
-                return;
-            }
-
-            const map = await storageManager.Search.TracingSomaMap.findOne({where: {tracingId: tracing.id}});
-
-            if (map) {
-                const node = await storageManager.Search.TracingNode.findById(map.somaId);
-
-                obj.somaX = node.x;
-                obj.somaY = node.y;
-                obj.somaZ = node.z;
-            } else {
-                obj.somaX = neuron.x;
-                obj.somaY = neuron.y;
-                obj.somaZ = neuron.z;
-            }
-
-            obj.tracingStructureId = tracing.tracingStructureId;
-
-            obj.neuronIdString = neuron.idString;
-            obj.neuronDOI = neuron.doi;
-
-            await storageManager.Search.NeuronBrainAreaMap.upsert(obj);
-        });
-    }, Promise.resolve());
-    */
+    while (objs.length > 0) {
+        const batch = objs.splice(0, 1000);
+        console.log(batch[0]);
+        debug(`upsert ${batch.length} neuron brain compartment maps`);
+        await storageManager.Search.NeuronBrainAreaMap.bulkCreate(batch);
+        debug(`${objs.length} neuron brain compartment maps remain`);
+    }
 
     debug(`neuron brain compartment maps complete`);
 }

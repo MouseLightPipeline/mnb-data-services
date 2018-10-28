@@ -4,6 +4,7 @@ export interface INeuron {
     id: string;
     idString: string;
     tag: string;
+    doi: string;
     keywords: string;
     x: number;
     y: number;
