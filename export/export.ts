@@ -7,22 +7,21 @@ const debug = require("debug")("ndb:data:search:generate-contents");
 import {ServiceOptions} from "../options/serviceOptions";
 import {PersistentStorageManager} from "../models/persistentStorageManager";
 
-import {IBrainArea} from "../models/sample/brainArea";
-import {INeuron} from "../models/sample/neuron";
 import {IMouseStrain} from "../models/sample/mouseStrain";
 import {ISample} from "../models/sample/sample";
 import {IInjectionVirus} from "../models/sample/injectionVirus";
 import {IFluorophore} from "../models/sample/fluorophore";
-import {ITracing} from "../models/search/tracing";
-import {ITracingNode} from "../models/search/tracingNode";
-import {TracingStructure} from "../models/search/tracingStructure";
+import {SearchTracingStructureId} from "../models/search/tracingStructure";
+import {ISearchBrainArea} from "../models/search/brainArea";
+import {ISearchTracingNode} from "../models/search/tracingNode";
+import {ISearchTracing, ISearchTracingAttributes} from "../models/search/tracing";
+import {ISearchNeuron} from "../models/search/neuron";
 
 const storageManager = PersistentStorageManager.Instance();
 
 const pathStructureMap = new Map<string, number>();
-const brainAreaMap = new Map<string, IBrainArea>();
-const neuronTracingMap = new Map<string, ITracing[]>();
-const tracingsSomaMap = new Map<string, ITracingNode>();
+const brainAreaMap = new Map<string, ISearchBrainArea>();
+const neuronTracingMap = new Map<string, ISearchTracing[]>();
 
 let axonId = null;
 let dendriteId = null;
@@ -43,31 +42,29 @@ export async function generateContents(outputLocation: string) {
             return;
         }
 
-        let s = await storageManager.Search.TracingStructure.findOne({where: {value: TracingStructure.axon}});
+        let s = await storageManager.Search.TracingStructure.findOne({where: {value: SearchTracingStructureId.axon}});
         pathStructureMap.set(s.id, 2);
         axonId = s.id;
-        s = await storageManager.Search.TracingStructure.findOne({where: {value: TracingStructure.dendrite}});
+        s = await storageManager.Search.TracingStructure.findOne({where: {value: SearchTracingStructureId.dendrite}});
         pathStructureMap.set(s.id, 3);
         dendriteId = s.id;
 
-        const brainAreas = await storageManager.Search.BrainArea.findAll({});
+        const brainAreas: ISearchBrainArea[] = await storageManager.Search.BrainArea.findAll({});
 
-        brainAreas.map(b => brainAreaMap.set(b.id, b.toJSON()));
+        brainAreas.map(b => brainAreaMap.set(b.id, b));
 
-        const tracingSomaMaps = await storageManager.Search.TracingSomaMap.findAll({});
-
-        await Promise.all(tracingSomaMaps.map(async (tsm) => {
-            const soma = await storageManager.Search.TracingNode.findById(tsm.somaId);
-            tracingsSomaMap.set(tsm.tracingId, soma ? soma.toJSON() : null);
-        }));
-
-        const tracings = await storageManager.Search.Tracing.findAll({});
+        const tracings = await storageManager.Search.Tracing.findAll({
+            include: [{
+                model: storageManager.Search.TracingNode,
+                as: "soma"
+            }]
+        });
 
         tracings.map(t => {
             if (neuronTracingMap.has(t.neuronId)) {
-                neuronTracingMap.get(t.neuronId).push(t.toJSON());
+                neuronTracingMap.get(t.neuronId).push(t);
             } else {
-                neuronTracingMap.set(t.neuronId, [t.toJSON()]);
+                neuronTracingMap.set(t.neuronId, [t]);
             }
         });
 
@@ -80,28 +77,28 @@ export async function generateContents(outputLocation: string) {
     }
 }
 
-async function processNeuron(neuron: INeuron, outputLocation: string) {
-    const relNeuron = await storageManager.Neurons.findById(neuron.id);
+async function processNeuron(neuron: ISearchNeuron, outputLocation: string) {
+    const relNeuron = await storageManager.Sample.Neuron.findById(neuron.id);
 
-    const injection = await storageManager.Injections.findById(relNeuron.injectionId);
+    const injection = await storageManager.Sample.Injection.findById(relNeuron.injectionId);
 
-    const fluorophore = await storageManager.Fluorophores.findById(injection.fluorophoreId);
+    const fluorophore = await storageManager.Sample.Fluorophore.findById(injection.fluorophoreId);
 
-    const injectionVirus = await storageManager.InjectionViruses.findById(injection.injectionVirusId);
+    const injectionVirus = await storageManager.Sample.InjectionVirus.findById(injection.injectionVirusId);
 
-    const sample = await storageManager.Samples.findById(injection.sampleId);
+    const sample = await storageManager.Sample.Sample.findById(injection.sampleId);
 
-    const mouse = await storageManager.MouseStrains.findById(sample.mouseStrainId);
+    const mouse = await storageManager.Sample.MouseStrain.findById(sample.mouseStrainId);
 
     // ---
 
     let swc = swcHeader(sample, mouse, injectionVirus, fluorophore, neuron);
 
-    // let offset = 0;
+    const tracings: ISearchTracing[] = neuronTracingMap.get(neuron.id);
 
-    const tracings: ITracing[] = neuronTracingMap.get(neuron.id);
-
-    await tracings.reduce(async (promise: Promise<number>, t: ITracing, index): Promise<number> => {
+    // Promise chain to force serial export of multiple tracings for the neuron.  Required to allow for sample number
+    // offsets when appending multiple tracings.
+    await tracings.reduce(async (promise: Promise<number>, t: ISearchTracingAttributes, index): Promise<number> => {
         const offset = await promise;
 
         return new Promise<number>(async (resolve) => {
@@ -110,6 +107,7 @@ async function processNeuron(neuron: INeuron, outputLocation: string) {
                 order: [["sampleNumber", "ASC"]]
             });
 
+            // Write the soma from the first tracing associated with the neuron.  Otherwise skip.
             if (index === 0) {
                 const node = nodes[0];
 
@@ -126,40 +124,17 @@ async function processNeuron(neuron: INeuron, outputLocation: string) {
         });
     }, Promise.resolve(0));
 
-    /*
-    await Promise.all(tracings.map(async (t: any, index: number) => {
-        let nodes = await storageManager.Search.TracingNode.findAll({
-            where: {tracingId: t.id},
-            order: [["sampleNumber", "ASC"]]
-        });
-
-        if (index === 0) {
-            const node = nodes[0];
-
-            swc += `${node.sampleNumber}\t${1}\t${node.x.toFixed(6)}\t${node.y.toFixed(6)}\t${node.z.toFixed(6)}\t${node.radius.toFixed(6)}\t${-1}\n`;
-        }
-
-        nodes = nodes.slice(1);
-
-        swc += mapToSwc(nodes, pathStructureMap.get(t.tracingStructureId), offset);
-
-        offset += nodes.length;
-    }));*/
-
     fs.writeFileSync(path.join(outputLocation, "swc", neuron.idString + ".swc"), swc);
 
     // ---
-    let axon: any = tracings.filter((t: any) => t.tracingStructureId === axonId);
-    axon = axon.length > 0 ? axon[0] : null;
 
-    let dendrite: any = tracings.filter((t: any) => t.tracingStructureId === dendriteId);
-    dendrite = dendrite.length > 0 ? dendrite[0] : null;
+    const axons: ISearchTracing[] = tracings.filter((t: any) => t.tracingStructureId === axonId);
+    const axon = axons.length > 0 ? axons[0] : {soma: null};
 
-    let soma = tracingsSomaMap.get(axon.id);
+    const dendrites: ISearchTracing[] = tracings.filter((t: any) => t.tracingStructureId === dendriteId);
+    const dendrite = dendrites.length > 0 ? dendrites[0] : {soma: null};
 
-    if (soma === null) {
-        soma = tracingsSomaMap.get(dendrite.id);
-    }
+    let soma = axon.soma || dendrite.soma;
 
     const obj = await mapToJSON(sample, mouse, injectionVirus, fluorophore, neuron, axon, dendrite, soma);
 
@@ -168,7 +143,7 @@ async function processNeuron(neuron: INeuron, outputLocation: string) {
     }
 }
 
-function swcHeader(sample: ISample, mouse: IMouseStrain, virus: IInjectionVirus, fluorophore: IFluorophore, neuron: INeuron) {
+function swcHeader(sample: ISample, mouse: IMouseStrain, virus: IInjectionVirus, fluorophore: IFluorophore, neuron: ISearchNeuron) {
     return `# Please consult Terms-of-Use at https://mouselight.janelia.org when referencing this reconstruction.\n`
         + `# DOI:\t\t\t\t\t${neuron.doi || "n/a"}\n`
         + `# Neuron Id:\t\t\t${neuron.idString}\n`
@@ -178,7 +153,7 @@ function swcHeader(sample: ISample, mouse: IMouseStrain, virus: IInjectionVirus,
         + `# Label Fluorophore:\t${fluorophore.name}\n`
 }
 
-function mapToSwc(nodes: ITracingNode[], pathStructure: number, offset: number = 0): string {
+function mapToSwc(nodes: ISearchTracingNode[], pathStructure: number, offset: number = 0): string {
     return nodes.reduce((prev, node) => {
         let sampleNumber = node.sampleNumber;
         let parentNumber = node.parentNumber;
@@ -193,7 +168,7 @@ function mapToSwc(nodes: ITracingNode[], pathStructure: number, offset: number =
     }, "");
 }
 
-async function mapToJSON(sample: ISample, mouse: IMouseStrain, virus: IInjectionVirus, fluorophore: IFluorophore, neuron: INeuron, axon: any, dendrite: any, soma: ITracingNode): Promise<any> {
+async function mapToJSON(sample: ISample, mouse: IMouseStrain, virus: IInjectionVirus, fluorophore: IFluorophore, neuron: ISearchNeuron, axon: any, dendrite: any, soma: ISearchTracingNode): Promise<any> {
     let allenIds = [];
 
     let somaObj = {};
@@ -205,6 +180,8 @@ async function mapToJSON(sample: ISample, mouse: IMouseStrain, virus: IInjection
             z: soma.z || NaN,
             allenId: brainAreaMap.get(soma.brainAreaId).structureId
         };
+    } else {
+        debug(`no soma for json export of ${neuron.idString || neuron.id}`)
     }
 
     let axonNodes = [];

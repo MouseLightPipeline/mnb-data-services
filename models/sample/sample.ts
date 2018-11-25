@@ -29,6 +29,7 @@ export interface ISampleAttributes {
     sharing?: number;
     createdAt?: Date;
     updatedAt?: Date;
+    deletedAt?: Date;
 }
 
 export interface ISample extends Instance<ISampleAttributes>, ISampleAttributes {

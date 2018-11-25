@@ -5,7 +5,7 @@ import {INeuronAttributes} from "./neuron";
 import {IFluorophoreAttributes, IFluorophoreTable} from "./fluorophore";
 import {IInjectionVirusAttributes, IInjectionVirusTable} from "./injectionVirus";
 import {IBrainAreaAttributes} from "./brainArea";
-import {ISampleAttributes} from "./sample";
+import {ISample} from "./sample";
 
 export interface IInjectionInput {
     id: string;
@@ -25,16 +25,15 @@ export interface IInjectionAttributes {
     sampleId?: string;
     createdAt?: Date;
     updatedAt?: Date;
+}
 
-    getSample?(): ISampleAttributes;
+export interface IInjection extends Instance<IInjectionAttributes>, IInjectionAttributes {
+    sample: ISample;
+
     getBrainArea?(): IBrainAreaAttributes;
     getInjectionVirus?(): IInjectionVirusAttributes;
     getFluorophore?(): IFluorophoreAttributes;
     getNeurons?(): INeuronAttributes[];
-}
-
-export interface IInjection extends Instance<IInjectionAttributes>, IInjectionAttributes {
-    getSamples(): ISampleAttributes[];
 }
 
 export interface IInjectionTable extends Model<IInjection, IInjectionAttributes> {

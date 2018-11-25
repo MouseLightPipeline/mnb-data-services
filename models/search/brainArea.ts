@@ -1,6 +1,6 @@
-import {Sequelize, DataTypes} from "sequelize";
+import {Instance, Model} from "sequelize";
 
-export interface IBrainArea {
+export interface ISearchBrainAreaAttributes {
     id: string;
     structureId: number;
     depth: number;
@@ -16,6 +16,12 @@ export interface IBrainArea {
     geometryFile: string;
     geometryColor: string;
     geometryEnable: boolean;
+}
+
+export interface ISearchBrainArea extends Instance<ISearchBrainAreaAttributes>, ISearchBrainAreaAttributes {
+}
+
+export interface ISearchBrainAreaTable extends Model<ISearchBrainArea, ISearchBrainAreaAttributes> {
 }
 
 export const TableName = "BrainArea";
@@ -43,6 +49,7 @@ export function sequelizeImport(sequelize, DataTypes) {
         geometryEnable: DataTypes.BOOLEAN,
     }, {
         timestamps: false,
+        freezeTableName: true
     });
 
     BrainArea.associate = (models: any) => {

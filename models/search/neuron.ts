@@ -1,6 +1,17 @@
-import {Sequelize, DataTypes} from "sequelize";
+import {Sequelize, DataTypes, Instance, Model} from "sequelize";
 
-export interface INeuron {
+export enum SearchScope {
+    Private = 0,
+    Team = 1,
+    Division = 2,
+    Internal = 3,
+    Moderated = 4,
+    External = 5,
+    Public = 6,
+    Published
+}
+
+export interface ISearchNeuronAttributes {
     id: string;
     idString: string;
     tag: string;
@@ -10,56 +21,42 @@ export interface INeuron {
     y: number;
     z: number;
     brainAreaId: string;
-    sharing: number;
+    searchScope: SearchScope;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface ISearchNeuron extends Instance<ISearchNeuronAttributes>, ISearchNeuronAttributes {
+}
+
+export interface ISearchNeuronTable extends Model<ISearchNeuron, ISearchNeuronAttributes> {
 }
 
 export const TableName = "Neuron";
 
 export function sequelizeImport(sequelize: Sequelize, DataTypes: DataTypes): any {
-    const Neuron: any = sequelize.define(TableName, {
+    const Neuron = sequelize.define(TableName, {
         id: {
             primaryKey: true,
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4
         },
-        idString: {
-            type: DataTypes.TEXT,
-            defaultValue: ""
-        },
-        tag: {
-            type: DataTypes.TEXT,
-            defaultValue: ""
-        },
-        keywords: {
-            type: DataTypes.TEXT,
-            defaultValue: ""
-        },
-        x: {
-            type: DataTypes.DOUBLE,
-            defaultValue: 0
-        },
-        y: {
-            type: DataTypes.DOUBLE,
-            defaultValue: 0
-        },
-        z: {
-            type: DataTypes.DOUBLE,
-            defaultValue: 0
-        },
-        sharing: {
-            type: DataTypes.INTEGER,
-            defaultValue: 1
-        },
-        doi: {
-            type: DataTypes.TEXT
-        }
+        idString: DataTypes.TEXT,
+        tag: DataTypes.TEXT,
+        keywords: DataTypes.TEXT,
+        x: DataTypes.DOUBLE,
+        y: DataTypes.DOUBLE,
+        z: DataTypes.DOUBLE,
+        searchScope: DataTypes.INTEGER,
+        doi: DataTypes.TEXT
     }, {
-        timestamps: true
+        timestamps: true,
+        freezeTableName: true
     });
 
     Neuron.associate = (models: any) => {
         Neuron.belongsTo(models.BrainArea, {foreignKey: {name: "brainAreaId", allowNull: true}});
-        Neuron.hasMany(models.NeuronBrainAreaMap, {foreignKey: "neuronId"});
+        Neuron.hasMany(models.SearchContent, {foreignKey: "neuronId"});
         Neuron.hasMany(models.Tracing, {foreignKey: "neuronId"});
     };
 

@@ -63,17 +63,17 @@ console.log(`brain lookup extents (HDF5 order) ${brainLookupExtents[0]} ${brainL
 const brainIdLookup = new Map<number, IBrainArea>();
 
 _storageManager.whenReady().then(async (b) => {
-    brainAreas = await _storageManager.BrainAreas.findAll({});
-    mouseStrains = await _storageManager.MouseStrains.findAll({});
-    fluorophores = await _storageManager.Fluorophores.findAll({});
-    viruses = await _storageManager.InjectionViruses.findAll({});
+    brainAreas = await _storageManager.Sample.BrainArea.findAll({});
+    mouseStrains = await _storageManager.Sample.MouseStrain.findAll({});
+    fluorophores = await _storageManager.Sample.Fluorophore.findAll({});
+    viruses = await _storageManager.Sample.InjectionVirus.findAll({});
 
-    axonTracing = await _storageManager.TracingStructures.findOne({where: {name: "axon"}});
-    dendriteTracing = await _storageManager.TracingStructures.findOne({where: {name: "dendrite"}});
+    axonTracing = await _storageManager.Swc.TracingStructure.findOne({where: {name: "axon"}});
+    dendriteTracing = await _storageManager.Swc.TracingStructure.findOne({where: {name: "dendrite"}});
 
-    soma = await _storageManager.StructureIdentifiers.findOne({where: {value: StructureIdentifiers.soma}});
-    path = await _storageManager.StructureIdentifiers.findOne({where: {value: StructureIdentifiers.undefined}});
-    endPoint = await _storageManager.StructureIdentifiers.findOne({where: {value: StructureIdentifiers.endPoint}});
+    soma = await _storageManager.Swc.StructureIdentifier.findOne({where: {value: StructureIdentifiers.soma}});
+    path = await _storageManager.Swc.StructureIdentifier.findOne({where: {value: StructureIdentifiers.undefined}});
+    endPoint = await _storageManager.Swc.StructureIdentifier.findOne({where: {value: StructureIdentifiers.endPoint}});
 
     if (brainIdLookup.size === 0) {
         console.log("populating brain area id lookup");
@@ -116,7 +116,7 @@ function getRandomBrainArea(): IBrainArea {
 async function createSample() {
     const strain = await getRandomMouseStrain();
 
-    const sample = await _storageManager.Samples.create({
+    const sample = await _storageManager.Sample.Sample.create({
         idNumber: await findNextSampleNumber(),
         sampleDate: new Date(),
         animalId: randomIndex(20000),
@@ -128,7 +128,7 @@ async function createSample() {
     });
 
     for (let idx = 0; idx < neuronsPerSample; idx++) {
-        const injection = await _storageManager.Injections.create({
+        const injection = await _storageManager.Sample.Injection.create({
             brainAreaId: getRandomBrainArea().id,
             injectionVirusId: getRandomVirus().id,
             injectionVirusName: null,
@@ -137,7 +137,7 @@ async function createSample() {
             sampleId: sample.id
         });
 
-        const neuron = await _storageManager.Neurons.create({
+        const neuron = await _storageManager.Sample.Neuron.create({
             idNumber: null,
             idString: `ZZ${randomIndex(9999)}`,
             tag: `Z-${randomIndex(999)}`,
@@ -158,7 +158,7 @@ async function createSample() {
 }
 
 async function createTracing(neuron, tracingStructureId) {
-    const swcTracing = await _storageManager.SwcTracings.create({
+    const swcTracing = await _storageManager.Swc.SwcTracing.create({
         annotator: randomWord(),
         neuronId: neuron.id,
         tracingStructureId: tracingStructureId,
@@ -197,9 +197,9 @@ async function createTracing(neuron, tracingStructureId) {
     nodeData[0].structureIdentifierId = soma.id;
     nodeData[nodeData.length - 1].structureIdentifierId = endPoint.id;
 
-    const nodes = await _storageManager.SwcNodes.bulkCreate(nodeData);
+    const nodes = await _storageManager.Swc.SwcTracingNode.bulkCreate(nodeData);
 
-    const tracing = await _storageManager.Tracings.create({
+    const tracing = await _storageManager.Transform.Tracing.create({
         swcTracingId: swcTracing.id,
         registrationTransformId: null,
         nodeCount: nodes.length,
@@ -270,7 +270,7 @@ async function createTracing(neuron, tracingStructureId) {
         return node;
     });
 
-    await _storageManager.Nodes.bulkCreate(tNodes);
+    await _storageManager.Transform.TracingNode.bulkCreate(tNodes);
 
     let compartments: IBrainCompartment[] = [];
 
@@ -287,7 +287,7 @@ async function createTracing(neuron, tracingStructureId) {
         });
     }
 
-    await _storageManager.BrainCompartment.bulkCreate(compartments);
+    await _storageManager.Transform.BrainCompartmentContents.bulkCreate(compartments);
 }
 
 function randomIndex(max: number): number {
@@ -311,7 +311,7 @@ function randomArrayElement<T>(items: T[]): T {
 }
 
 async function findNextSampleNumber() {
-    const existing = await _storageManager.Samples.findAll({
+    const existing = await _storageManager.Sample.Sample.findAll({
         attributes: ["idNumber"],
         order: [["idNumber", "DESC"]],
         limit: 1

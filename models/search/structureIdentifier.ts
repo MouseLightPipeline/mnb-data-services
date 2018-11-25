@@ -1,10 +1,6 @@
-export interface IStructureIdentifier {
-    id: string;
-    name: string;
-    value: number;
-}
+import {Instance, Model} from "sequelize";
 
-export enum StructureIdentifiers {
+export enum SearchStructureIdentifierId {
     undefined = 0,
     soma = 1,
     axon = 2,
@@ -12,6 +8,19 @@ export enum StructureIdentifiers {
     apicalDendrite = 4,
     forkPoint = 5,
     endPoint = 6
+}
+
+export interface ISearchStructureIdentifierAttributes {
+    id: string;
+    name: string;
+    value: SearchStructureIdentifierId;
+}
+
+export interface ISearchStructureIdentifier extends Instance<ISearchStructureIdentifierAttributes>, ISearchStructureIdentifierAttributes {
+}
+
+export interface ISearchStructureIdentifierTable extends Model<ISearchStructureIdentifier, ISearchStructureIdentifierAttributes> {
+    countColumnName(s: number | string | ISearchStructureIdentifierAttributes): string | null;
 }
 
 export const TableName = "StructureIdentifier";
@@ -27,72 +36,11 @@ export function sequelizeImport(sequelize, DataTypes) {
         value: DataTypes.INTEGER
     }, {
         timestamps: false,
+        freezeTableName: true
     });
 
     StructureIdentifier.associate = models => {
         // StructureIdentifier.hasMany(models.SwcTracingNode, {foreignKey: "structureIdentifierId", as: "Nodes"});
-    };
-
-    const map = new Map<string, number>();
-    const reverseMap = new Map<number, String>();
-
-    StructureIdentifier.prepareContents = () => {
-        StructureIdentifier.buildIdValueMap();
-    };
-
-    StructureIdentifier.buildIdValueMap = async () => {
-        if (map.size === 0) {
-            const all = await StructureIdentifier.findAll({});
-            all.forEach(s => {
-                map.set(s.id, s.value);
-                reverseMap.set(s.value, s.id);
-            });
-        }
-    };
-
-    StructureIdentifier.idValue = (id: string) => {
-        return map.get(id);
-    };
-
-    StructureIdentifier.valueId = (value: number) => {
-        return reverseMap.get(value);
-    };
-
-    StructureIdentifier.structuresAreLoaded = () => {
-        return map.size > 0;
-    };
-
-    StructureIdentifier.countColumnName = (s: number | string | IStructureIdentifier) => {
-        if (s === null || s === undefined) {
-            return null;
-        }
-
-        let value: number = null;
-
-        if (typeof s === "number") {
-            value = s;
-        } else if (typeof s === "string") {
-            value = map.get(s);
-        } else {
-            value = s.value;
-        }
-
-        if (value === null || value === undefined) {
-            return null;
-        }
-
-        switch (value) {
-            case StructureIdentifiers.soma:
-                return "somaCount";
-            case StructureIdentifiers.undefined:
-                return "pathCount";
-            case StructureIdentifiers.forkPoint:
-                return "branchCount";
-            case  StructureIdentifiers.endPoint:
-                return "endCount";
-        }
-
-        return null;
     };
 
     return StructureIdentifier;

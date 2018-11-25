@@ -1,3 +1,5 @@
+import {ISearchStructureIdentifierTable} from "./search/structureIdentifier";
+
 const Sequelize = require("sequelize");
 
 const debug = require("debug")("ndb:transform:database-connector");
@@ -5,6 +7,12 @@ const debug = require("debug")("ndb:transform:database-connector");
 import {DatabaseOptions} from "../options/databaseOptions";
 
 import {loadModels} from "./modelLoader";
+import {ISearchContentTable} from "./search/searchContent";
+import {ISearchTracingTable} from "./search/tracing";
+import {ISearchNeuronTable} from "./search/neuron";
+import {ISearchBrainAreaTable} from "./search/brainArea";
+import {ISearchTracingNodeTable} from "./search/tracingNode";
+import {ISearchTracingStructureTable} from "./search/tracingStructure";
 
 export interface ISampleDatabaseModels {
     BrainArea?: any
@@ -30,15 +38,24 @@ export interface ITransformDatabaseModels {
     BrainCompartmentContents?: any;
 }
 
-export interface ISearchDatabaseModels {
-    BrainArea?: any
-    StructureIdentifier?: any;
-    TracingStructure?: any;
-    Neuron?: any;
-    Tracing?: any;
-    TracingNode?: any;
-    NeuronBrainAreaMap?: any;
-    TracingSomaMap?: any;
+export class SearchTables {
+    public constructor() {
+        this.BrainArea = null;
+        this.Neuron = null;
+        this.SearchContent = null;
+        this.StructureIdentifier = null;
+        this.Tracing = null;
+        this.TracingNode = null;
+        this.TracingStructure = null;
+    }
+
+    BrainArea: ISearchBrainAreaTable;
+    Neuron: ISearchNeuronTable;
+    SearchContent: ISearchContentTable;
+    StructureIdentifier: ISearchStructureIdentifierTable;
+    Tracing: ISearchTracingTable;
+    TracingNode: ISearchTracingNodeTable;
+    TracingStructure: ISearchTracingStructureTable;
 }
 
 export interface ISequelizeDatabase<T> {
@@ -54,67 +71,18 @@ export class PersistentStorageManager {
         return _manager;
     }
 
-    public get BrainAreas() {
-        return this.sampleDatabase.tables.BrainArea;
+    public get Sample(): ISampleDatabaseModels {
+        return this.sampleDatabase.tables;
     }
 
-    public get Samples() {
-        return this.sampleDatabase.tables.Sample;
+    public get Swc(): ISwcDatabaseModels {
+        return this.swcDatabase.tables;
     }
 
-    public get Injections() {
-        return this.sampleDatabase.tables.Injection;
+    public get Transform(): ITransformDatabaseModels {
+        return this.transformDatabase.tables;
     }
-
-    public get RegistrationTransforms() {
-        return this.sampleDatabase.tables.RegistrationTransform;
-    }
-
-    public get MouseStrains() {
-        return this.sampleDatabase.tables.MouseStrain;
-    }
-
-    public get InjectionViruses() {
-        return this.sampleDatabase.tables.InjectionVirus;
-    }
-
-    public get Fluorophores() {
-        return this.sampleDatabase.tables.Fluorophore;
-    }
-
-    public get Neurons() {
-        return this.sampleDatabase.tables.Neuron;
-    }
-
-    public get TracingStructures() {
-        return this.swcDatabase.tables.TracingStructure;
-    }
-
-    public get StructureIdentifiers() {
-        return this.swcDatabase.tables.StructureIdentifier;
-    }
-
-    public get SwcTracings() {
-        return this.swcDatabase.tables.SwcTracing;
-    }
-
-    public get SwcNodes() {
-        return this.swcDatabase.tables.SwcTracingNode;
-    }
-
-    public get Tracings() {
-        return this.transformDatabase.tables.Tracing;
-    }
-
-    public get Nodes() {
-        return this.transformDatabase.tables.TracingNode;
-    }
-
-    public get BrainCompartment() {
-        return this.transformDatabase.tables.BrainCompartmentContents;
-    }
-
-    public get Search(): ISearchDatabaseModels {
+    public get Search(): SearchTables {
         return this.searchDatabase.tables;
     }
 
@@ -144,7 +112,7 @@ export class PersistentStorageManager {
     private sampleDatabase: ISequelizeDatabase<ISampleDatabaseModels> = createConnection("sample", {});
     private swcDatabase: ISequelizeDatabase<ISwcDatabaseModels> = createConnection("swc", {});
     private transformDatabase: ISequelizeDatabase<ITransformDatabaseModels> = createConnection("transform", {});
-    private searchDatabase: ISequelizeDatabase<ISearchDatabaseModels> = createConnection("search", {});
+    private searchDatabase: ISequelizeDatabase<SearchTables> = createConnection("search", new SearchTables());
 }
 
 async function authenticate(database, name) {
