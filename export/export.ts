@@ -2,7 +2,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as _ from "lodash";
 
-const debug = require("debug")("ndb:data:search:generate-contents");
+const debug = require("debug")("mnb:data:search:generate-contents");
 
 import {ServiceOptions} from "../options/serviceOptions";
 import {PersistentStorageManager} from "../models/persistentStorageManager";
@@ -42,6 +42,8 @@ export async function generateContents(outputLocation: string) {
             return;
         }
 
+        debug("Load constants");
+
         let s = await storageManager.Search.TracingStructure.findOne({where: {value: SearchTracingStructureId.axon}});
         pathStructureMap.set(s.id, 2);
         axonId = s.id;
@@ -49,9 +51,14 @@ export async function generateContents(outputLocation: string) {
         pathStructureMap.set(s.id, 3);
         dendriteId = s.id;
 
+        debug("Load brain areas");
+
         const brainAreas: ISearchBrainArea[] = await storageManager.Search.BrainArea.findAll({});
 
         brainAreas.map(b => brainAreaMap.set(b.id, b));
+
+
+        debug("Load tracings");
 
         const tracings = await storageManager.Search.Tracing.findAll({
             include: [{
@@ -68,9 +75,19 @@ export async function generateContents(outputLocation: string) {
             }
         });
 
+        debug("Load neurons");
+
         const neurons = await storageManager.Search.Neuron.findAll({});
 
-        await Promise.all(neurons.map(n => processNeuron(n, outputLocation)));
+        // await Promise.all(neurons.map(n => processNeuron(n, outputLocation)));
+
+        debug(`Process ${neurons.length} neurons`);
+
+        await neurons.reduce(async (p, n) => {
+            debug(`${n.id}`);
+            await p;
+            return processNeuron(n, outputLocation);
+        }, Promise.resolve());
 
     } catch (err) {
         debug(err);
@@ -95,6 +112,10 @@ async function processNeuron(neuron: ISearchNeuron, outputLocation: string) {
     let swc = swcHeader(sample, mouse, injectionVirus, fluorophore, neuron);
 
     const tracings: ISearchTracing[] = neuronTracingMap.get(neuron.id);
+
+    if (!tracings || tracings.length === 0) {
+        return;
+    }
 
     // Promise chain to force serial export of multiple tracings for the neuron.  Required to allow for sample number
     // offsets when appending multiple tracings.
