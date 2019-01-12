@@ -116,7 +116,7 @@ async function syncNeurons() {
     await Promise.all(input.map(async (n) => {
         const neuron = localNeuronMap.get(n.id);
 
-        if (!neuron || n.updatedAt > neuron.updatedAt) {
+        if (!neuron || n.updatedAt > neuron.updatedAt || n.injection.sample.updatedAt > neuron.updatedAt) {
             const searchNeuron: ISearchNeuronAttributes = Object.assign(n.toJSON(), {searchScope: SearchScope.Team});
 
             if (!n.brainAreaId) {
