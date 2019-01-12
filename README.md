@@ -59,7 +59,7 @@ assuming a typical setup with the ndb_back_tier network.
 
 From there, navigate to the `export` directory and use
 
-`npm run generate /opt/data`
+`npm run export /opt/data`
 
 ## Optimized Search
 This functionality transforms tracings and any associated data required for the search service into a format more suitable

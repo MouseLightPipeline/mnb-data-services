@@ -195,11 +195,13 @@ async function mapToJSON(sample: ISample, mouse: IMouseStrain, virus: IInjection
     let somaObj = {};
 
     if (soma) {
+        const somaBrainArea = brainAreaMap.get(soma.brainAreaId);
+
         somaObj = {
             x: soma.x || NaN,
             y: soma.y || NaN,
             z: soma.z || NaN,
-            allenId: brainAreaMap.get(soma.brainAreaId).structureId
+            allenId: somaBrainArea ? somaBrainArea.structureId : null
         };
     } else {
         debug(`no soma for json export of ${neuron.idString || neuron.id}`)
