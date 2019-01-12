@@ -25,7 +25,12 @@ const NODE_INSERT_INCREMENT = 25000;
 
 const storageManager = PersistentStorageManager.Instance();
 
+// All neurons
 const neuronMap = new Map<string, ISearchNeuron>();
+
+// Neurons that have been flagged as changed.  Must upsert compartment maps even if source tracing has not
+// been updated.  Could be a change to neuron visibility.
+const requiredNeurons = new Array<string>();
 
 const tracingsMap = new Map<string, ISearchTracing>();
 
@@ -146,6 +151,8 @@ async function syncNeurons() {
 
             const [model] = await storageManager.Search.Neuron.upsert(searchNeuron, {returning: true});
 
+            requiredNeurons.push(model.id);
+
             neuronMap.set(model.id, model);
         } else {
             neuronMap.set(neuron.id, neuron);
@@ -265,7 +272,7 @@ async function syncNodes() {
 }
 
 async function syncTracingSomaMap() {
-    if (updateRequiredForTracings.length === 0) {
+    if (updateRequiredForTracings.length === 0 || requiredNeurons) {
         debug(`no tracings require soma updates`);
         return;
     }
@@ -297,12 +304,19 @@ async function syncTracingSomaMap() {
 }
 
 async function syncSearchContent() {
-    if (updateRequiredForTracings.length === 0) {
+    if (updateRequiredForTracings.length === 0 && requiredNeurons.length === 0) {
         debug(`no search content updates are required`);
         return;
     }
 
-    const input = await storageManager.Transform.BrainCompartmentContents.findAll({where: {tracingId: {[Op.in]: updateRequiredForTracings}}});
+    const input = await storageManager.Transform.BrainCompartmentContents.findAll({
+        where: {
+            [Op.or]: [
+                {tracingId: {[Op.in]: updateRequiredForTracings}},
+                {neuronId: {[Op.in]: Array.from(requiredNeurons)}}
+            ]
+        }
+    });
 
     debug(`verify ${input.length} search contents`);
 
