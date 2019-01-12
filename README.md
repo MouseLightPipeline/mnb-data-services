@@ -49,17 +49,18 @@ Restoring to a development environment.  When run inside a test or production co
 
 ## Export
 Export is used to generate the downloadable SWC and JSON neuron files from the search service rather than repeatedly generating
-them on the fly.  This should be used any time the optimized search database is updated with new neurons/tracings. The volume mapping below for output is just an example when on the current setup on ml-ubuntu-test.
+them on the fly.  This should be used any time the optimized search database is updated with new neurons/tracings. The
+volume mapping below for output is an example for the current setup on mouselight.int.janelia.org.
 
 There is no pre-made script for export.  To run, start an interactive session connected to the system for the export.
 
-`docker run -it --rm --network ndb_back_tier -e NODE_ENV=production -v ~/mouselight/ne-system-prod:/opt/data mouselightdatabrowser/data /bin/bash`
+`docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -v /data/sites/mnb/:/opt/data mouselightdatabrowser/data-services:1.4 /bin/bash`
 
-assuming a typical setup with the ndb_back_tier network.
+assuming a typical setup with the mnb_back_tier network.
 
-From there, navigate to the `export` directory and use
+From there use
 
-`npm run export /opt/data`
+`yarn run export`
 
 ## Optimized Search
 This functionality transforms tracings and any associated data required for the search service into a format more suitable
