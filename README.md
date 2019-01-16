@@ -52,11 +52,16 @@ Export is used to generate the downloadable SWC and JSON neuron files from the s
 them on the fly.  This should be used any time the optimized search database is updated with new neurons/tracings. The
 volume mapping below for output is an example for the current setup on mouselight.int.janelia.org.
 
-There is no pre-made script for export.  To run, start an interactive session connected to the system for the export.
+There is no pre-made script for export.  To run, load the database password:
 
-`docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -v /data/sites/mnb/:/opt/data mouselightdatabrowser/data-services:1.4 /bin/bash`
+`source options.sh`
+
+and start an interactive session connected to the system for the export
+
+`docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -e DATABASE_PW=${DATABASE_PW} -v /data/sites/mnb/:/opt/data mouselightdatabrowser/data-services:1.4 /bin/bash`
 
 assuming a typical setup with the mnb_back_tier network.
+
 
 From there use
 
@@ -68,13 +73,17 @@ for search/query performance.  Although the code has been implemented to support
 At this time is likely better to drop the existing tables and repopulate from scratch.
 
 To do this use yor graphical SQL tool of choice or the postgres command line interface to drop the existing tables.  Then
-start an interactive container session
+load the database password:
 
-`docker run -it --rm --network ndb_back_tier -e NODE_ENV=production mouselightdatabrowser/data /bin/bash`
+`source options.sh`
 
-Navigate to the `search` directory and use 
+and start an interactive session connected to the system
 
-`npm run generate`
+`docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -e DATABASE_PW=${DATABASE_PW} mouselightdatabrowser/data-services:1.4 /bin/bash`
+
+Perform the migration
+
+`yarn run optimize`
 
 You will see the relative progress as the content is transformed.  It can take several minutes to complete.
 
@@ -84,7 +93,7 @@ well-tested.
 
 There is no pre-made script.  To use, start an interactive session
 
-`docker run -it --rm --network ndb_back_tier -e NODE_ENV=production mouselightdatabrowser/data /bin/bash`
+`docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -e DATABASE_PW=${DATABASE_PW} mouselightdatabrowser/data-services:1.4 /bin/bash`
 
 From there, navigate to the `synthetic` directory and use
 
