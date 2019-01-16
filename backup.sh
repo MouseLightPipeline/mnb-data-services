@@ -2,6 +2,8 @@
 
 echo "Perform backup of all databases."
 
+export PGPASSWORD=${DATABASE_PW}
+
 yarn run backup sample
 
 wait
