@@ -149,6 +149,8 @@ async function syncNeurons() {
                     searchNeuron.searchScope = SearchScope.Private;
             }
 
+            searchNeuron.updatedAt = new Date();
+
             const [model] = await storageManager.Search.Neuron.upsert(searchNeuron, {returning: true});
 
             requiredNeurons.push(model.id);
@@ -212,6 +214,7 @@ async function syncTracings() {
 
             searchTracing.neuronId = swcTracing.neuronId;
             searchTracing.tracingStructureId = swcTracing.tracingStructureId;
+            searchTracing.somaId = null; // Reset - will be dropping all nodes and regenerating them.
 
             const [model] = await storageManager.Search.Tracing.upsert(searchTracing, {returning: true});
 
@@ -272,7 +275,7 @@ async function syncNodes() {
 }
 
 async function syncTracingSomaMap() {
-    if (updateRequiredForTracings.length === 0 || requiredNeurons) {
+    if (updateRequiredForTracings.length === 0) {
         debug(`no tracings require soma updates`);
         return;
     }
@@ -309,16 +312,23 @@ async function syncSearchContent() {
         return;
     }
 
+    debug(`${updateRequiredForTracings.length} tracings and ${requiredNeurons.length} neurons triggering contents update`);
+
+    const tracingsForNeurons = await storageManager.Search.Tracing.findAll({where: {neuronId: {[Op.in]: requiredNeurons}}});
+
+    const allTracings = _.uniq(updateRequiredForTracings.concat(tracingsForNeurons.map(t => t.id)));
+
+    debug(`resolved to ${allTracings.length} tracings`);
+
     const input = await storageManager.Transform.BrainCompartmentContents.findAll({
         where: {
-            [Op.or]: [
-                {tracingId: {[Op.in]: updateRequiredForTracings}},
-                {neuronId: {[Op.in]: Array.from(requiredNeurons)}}
-            ]
+                tracingId: {[Op.in]: allTracings}
         }
     });
 
-    debug(`verify ${input.length} search contents`);
+    debug(`resolved to ${input.length} search contents`);
+
+    await storageManager.Search.SearchContent.destroy({where: {tracingId: {[Op.in]: allTracings}}});
 
     const objs = input.map(c => {
         const obj: ISearchContentAttributes = c.toJSON();
