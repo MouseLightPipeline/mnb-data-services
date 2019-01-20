@@ -42,7 +42,7 @@ export async function generateContents(outputLocation: string) {
             return;
         }
 
-        debug("Load constants");
+        debug("load constants");
 
         let s = await storageManager.Search.TracingStructure.findOne({where: {value: SearchTracingStructureId.axon}});
         pathStructureMap.set(s.id, 2);
@@ -51,14 +51,13 @@ export async function generateContents(outputLocation: string) {
         pathStructureMap.set(s.id, 3);
         dendriteId = s.id;
 
-        debug("Load brain areas");
+        debug("load brain areas");
 
         const brainAreas: ISearchBrainArea[] = await storageManager.Search.BrainArea.findAll({});
 
         brainAreas.map(b => brainAreaMap.set(b.id, b));
 
-
-        debug("Load tracings");
+        debug("load tracings");
 
         const tracings = await storageManager.Search.Tracing.findAll({
             include: [{
@@ -75,19 +74,21 @@ export async function generateContents(outputLocation: string) {
             }
         });
 
-        debug("Load neurons");
+        debug("load neurons");
 
         const neurons = await storageManager.Search.Neuron.findAll({});
 
         // await Promise.all(neurons.map(n => processNeuron(n, outputLocation)));
 
-        debug(`Process ${neurons.length} neurons`);
+        debug(`process ${neurons.length} neurons`);
 
-        await neurons.reduce(async (p, n) => {
-            debug(`${n.id}`);
+        await neurons.reduce(async (p, n, idx) => {
             await p;
+            debug(`${idx}:\t${n.id}`);
             return processNeuron(n, outputLocation);
         }, Promise.resolve());
+
+        debug(`finished processing`);
 
     } catch (err) {
         debug(err);
