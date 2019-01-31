@@ -137,7 +137,7 @@ async function syncNeurons() {
 
                 const brainArea = await getBrainArea(i.brainAreaId);
 
-                searchNeuron.brainAreaId = brainArea.id;
+                // searchNeuron.brainAreaId = brainArea.id;
             } else {
                 userDefinedBrainArea = true;
             }
@@ -221,9 +221,11 @@ async function syncTracings() {
 
         const swcTracing = await storageManager.Swc.SwcTracing.findById(t.swcTracingId);
 
+        const neuron = await storageManager.Sample.Neuron.findById(swcTracing.neuronId);
+
         // None of the neuron properties directly affect search tracing properties, so even if the neuron is being
         // updated, we do not need to update the tracing if its source tracing or swc tracing have not changed.
-        if (!tracing || t.updatedAt > tracing.updatedAt || swcTracing.updatedAt > tracing.updatedAt) {
+        if (!tracing || t.updatedAt > tracing.updatedAt || swcTracing.updatedAt > tracing.updatedAt || (neuron !== null && (neuron.updatedAt > tracing.updatedAt))) {
             const searchTracing: ISearchTracingAttributes = Object.assign(t.toJSON());
 
             searchTracing.neuronId = swcTracing.neuronId;
@@ -307,17 +309,20 @@ async function syncNodes() {
 
     // Setting this here so that sync of the tracing-soma map uses the correct value.
     await Promise.all(tracings.map(async (t) => {
-        const soma = await storageManager.Transform.TracingNode.findOne({
-            where: {
-                tracingId: t.id,
-                structureIdentifierId: somaStructureIdentifier.id
-            }
-        });
+        if (neuronsWithUserDefinedBrainArea.some(id => id === t.neuronId)) {
+            const soma = await storageManager.Search.TracingNode.findOne({
+                where: {
+                    tracingId: t.id,
+                    structureIdentifierId: somaStructureIdentifier.id
+                }
+            });
 
-        if (soma) {
-            await soma.update({brainAreaId: neuronMap.get(t.neuronId).brainAreaId});
-        } else {
-            debug(`no soma for tracing ${t.id}`);
+            if (soma) {
+                await soma.update({brainAreaId: neuronMap.get(t.neuronId).brainAreaId});
+                debug(`setting soma for tracing ${t.id}`);
+            } else {
+                debug(`no soma for tracing ${t.id}`);
+            }
         }
     }));
 }
