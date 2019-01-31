@@ -9,6 +9,7 @@ import {ISearchTracing, ISearchTracingAttributes} from "../models/search/tracing
 import {ISwcTracing} from "../models/swc/tracing";
 import {ISearchTracingNode} from "../models/search/tracingNode";
 import {ISearchContentAttributes} from "../models/search/searchContent";
+import uuid = require("uuid");
 
 const debug = require("debug")("mnb:data:search:generate-contents");
 
@@ -31,6 +32,11 @@ const neuronMap = new Map<string, ISearchNeuron>();
 // Neurons that have been flagged as changed.  Must upsert compartment maps even if source tracing has not
 // been updated.  Could be a change to neuron visibility.
 const requiredNeurons = new Array<string>();
+
+// Track neurons that have been updated and whose brain area is specified rather than inherited from its tracings.  In
+// this case we need to override the soma and search content brain areas later, but by the time we do that we've already
+// updated the actual neuron entry with the inherited value and there is no way to distinguish.
+const neuronsWithUserDefinedBrainArea: string[] = [];
 
 const tracingsMap = new Map<string, ISearchTracing>();
 
@@ -124,12 +130,16 @@ async function syncNeurons() {
         if (!neuron || n.updatedAt > neuron.updatedAt || n.injection.sample.updatedAt > neuron.updatedAt) {
             const searchNeuron: ISearchNeuronAttributes = Object.assign(n.toJSON(), {searchScope: SearchScope.Team});
 
+            let userDefinedBrainArea = false;
+
             if (!n.brainAreaId) {
                 const i = await storageManager.Sample.Injection.findById(n.injectionId);
 
                 const brainArea = await getBrainArea(i.brainAreaId);
 
                 searchNeuron.brainAreaId = brainArea.id;
+            } else {
+                userDefinedBrainArea = true;
             }
 
             const visibility = n.sharing === ShareVisibility.Inherited ? n.injection.sample.sharing : n.sharing;
@@ -156,6 +166,10 @@ async function syncNeurons() {
             requiredNeurons.push(model.id);
 
             neuronMap.set(model.id, model);
+
+            if (userDefinedBrainArea) {
+                neuronsWithUserDefinedBrainArea.push(model.id);
+            }
         } else {
             neuronMap.set(neuron.id, neuron);
             skipped++;
@@ -247,7 +261,7 @@ async function syncTracings() {
 }
 
 async function syncNodes() {
-    if (updateRequiredForTracings.length === 0) {
+    if (updateRequiredForTracings.length === 0 && requiredNeurons.length === 0) {
         debug(`no tracings require node updates`);
         return;
     }
@@ -256,7 +270,7 @@ async function syncNodes() {
 
     let offset = 0;
 
-    debug(`Syncing ${count} nodes`);
+    debug(`syncing ${count} nodes`);
 
     while (offset < count) {
         const nodes = await storageManager.Transform.TracingNode.findAll({
@@ -272,17 +286,49 @@ async function syncNodes() {
 
         offset += NODE_INSERT_INCREMENT;
     }
+
+    debug(`updating soma node brain areas from neuron`);
+
+    // So long as there are only thousand(s) of tracings, just update them all for that are linked to neurons where the
+    // soma brain area is specified.  At some point, should just pull the merged set of tracings that changed plus
+    // tracings of neurons that changed.
+    const neurons = await storageManager.Search.Neuron.findAll({
+        where: {brainAreaId: {[Op.ne]: null}},
+        attributes: ["id"]
+    });
+
+    debug(`${neurons.length} have soma brain area specified`);
+
+    const tracings = await storageManager.Search.Tracing.findAll({where: {neuronId: {[Op.in]: neurons.map(n => n.id)}}});
+
+    debug(`updating soma brain area for ${tracings.length} tracings`);
+
+    const somaStructureIdentifier = await storageManager.Search.StructureIdentifier.findOne({where: {value: StructureIdentifiers.soma}});
+
+    // Setting this here so that sync of the tracing-soma map uses the correct value.
+    await Promise.all(tracings.map(async (t) => {
+        const soma = await storageManager.Transform.TracingNode.findOne({
+            where: {
+                tracingId: t.id,
+                structureIdentifierId: somaStructureIdentifier.id
+            }
+        });
+
+        if (soma) {
+            await soma.update({brainAreaId: neuronMap.get(t.neuronId).brainAreaId});
+        } else {
+            debug(`no soma for tracing ${t.id}`);
+        }
+    }));
 }
 
+// There is no longer any table for this, but will use the generated map as a fast, synchronous lookup for generating
+// the search content table.
 async function syncTracingSomaMap() {
-    if (updateRequiredForTracings.length === 0) {
-        debug(`no tracings require soma updates`);
-        return;
-    }
+    // const tracings = await storageManager.Search.Tracing.findAll({where: {id: {[Op.in]: updateRequiredForTracings}}});
+    const tracings = await storageManager.Search.Tracing.findAll();
 
-    const tracings = await storageManager.Search.Tracing.findAll({where: {id: {[Op.in]: updateRequiredForTracings}}});
-
-    debug(`Upsert ${tracings.length} tracing soma`);
+    debug(`create map for ${tracings.length} tracing soma`);
 
     const somaStructureIdentifier = await storageManager.Search.StructureIdentifier.findOne({where: {value: StructureIdentifiers.soma}});
 
@@ -301,7 +347,7 @@ async function syncTracingSomaMap() {
 
             tracingsSomaMap.set(t.id, soma);
         } else {
-            debug(`No soma for tracing ${t.id}`);
+            debug(`no soma for tracing ${t.id}`);
         }
     }));
 }
@@ -322,7 +368,7 @@ async function syncSearchContent() {
 
     const input = await storageManager.Transform.BrainCompartmentContents.findAll({
         where: {
-                tracingId: {[Op.in]: allTracings}
+            tracingId: {[Op.in]: allTracings}
         }
     });
 
@@ -344,11 +390,16 @@ async function syncSearchContent() {
             return null;
         }
 
-        const node: ISearchTracingNode | ISearchNeuron = tracingsSomaMap.get(tracing.id) || neuron;
+        const soma: ISearchTracingNode = tracingsSomaMap.get(tracing.id);
 
-        obj.somaX = node.x;
-        obj.somaY = node.y;
-        obj.somaZ = node.z;
+        if (!soma) {
+            debug(`no soma for tracing ${tracing.id} referencing ${tracing.neuronId}`);
+            return null;
+        }
+
+        obj.somaX = soma.x;
+        obj.somaY = soma.y;
+        obj.somaZ = soma.z;
 
         obj.tracingStructureId = tracing.tracingStructureId;
 
@@ -369,6 +420,51 @@ async function syncSearchContent() {
     }
 
     debug(`search content complete`);
+
+
+    debug(`updating search content rows for neurons with soma brain area defined`);
+
+    // This should be doable in one step since there should only be one entry per tracing with a soma count > 0.
+    const somaContentRows = await storageManager.Search.SearchContent.findAll({
+        where: {
+            tracingId: {[Op.in]: allTracings},
+            somaCount: {[Op.gt]: 0}
+        }
+    });
+
+    const rowsToUpdate = somaContentRows.filter(s => {
+        return neuronsWithUserDefinedBrainArea.some(id => id === s.neuronId);
+    });
+
+    debug(`found ${rowsToUpdate.length} contents whose neurons have non-null brainAreaId`);
+
+    await Promise.all(rowsToUpdate.map(async (s) => {
+        const somaCount = s.somaCount;
+
+        await s.update({somaCount: 0, nodeCount: s.nodeCount - somaCount});
+
+        const other = await storageManager.Search.SearchContent.findOne({
+            where: {
+                tracingId: s.tracingId,
+                brainAreaId: neuronMap.get(s.neuronId).brainAreaId
+            }
+        });
+
+        if (other) {
+            await other.update({somaCount, nodeCount: other.nodeCount + somaCount});
+        } else {
+            const obj = s.toJSON();
+            obj.id = uuid.v4();
+            obj.brainAreaId = neuronMap.get(s.neuronId).brainAreaId;
+            obj.nodeCount = somaCount;
+            obj.somaCount = somaCount;
+            obj.pathCount = 0;
+            obj.branchCount = 0;
+            obj.endCount = 0;
+
+            await storageManager.Search.SearchContent.create(obj, {isNewRecord: true});
+        }
+    }));
 }
 
 async function simpleSync(srcModel, dstModel, name: string) {
