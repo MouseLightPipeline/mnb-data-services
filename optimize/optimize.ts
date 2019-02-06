@@ -4,7 +4,6 @@ import {PersistentStorageManager} from "../models/persistentStorageManager";
 import {StructureIdentifiers} from "../models/swc/structureIdentifier";
 import {INeuron} from "../models/sample/neuron";
 import {ISearchNeuron, ISearchNeuronAttributes, SearchScope} from "../models/search/neuron";
-import {ISearchBrainArea} from "../models/search/brainArea";
 import {ISearchTracing, ISearchTracingAttributes} from "../models/search/tracing";
 import {ISwcTracing} from "../models/swc/tracing";
 import {ISearchTracingNode} from "../models/search/tracingNode";
@@ -46,6 +45,10 @@ const tracingsSomaMap = new Map<string, ISearchTracingNode>();
 
 let neuronRemoveIds: string[] = [];
 let tracingRemoveIds: string[] = [];
+
+const minVisibility = process.argv.length > 2 ? parseInt(process.argv[2]) : ShareVisibility.DoNotShare;
+
+debug(`using min visibility level of ${minVisibility}`);
 
 generateContents().then((success: boolean) => {
     debug(`translation complete ${success ? "successfully" : "with error"}`);
@@ -101,20 +104,29 @@ async function syncTracingStructures() {
 }
 
 async function syncNeurons() {
-    const input: INeuron[] = await storageManager.Sample.Neuron.findAll({
+    let input: INeuron[] = await storageManager.Sample.Neuron.findAll({
         include: [{
             model: storageManager.Sample.Injection,
             as: "injection",
             include: [{
                 model: storageManager.Sample.Sample,
-                as: "sample",
+                as: "sample"
             }]
         }]
     });
 
-    debug(`upsert ${input.length} neurons`);
+    debug(`found ${input.length} input neurons`);
+
+    input = input.filter(n => {
+        const visibility = n.sharing === ShareVisibility.Inherited ? n.injection.sample.sharing : n.sharing;
+        return visibility >= minVisibility;
+    });
+
+    debug(`${input.length} input neurons meet visibility requirements`);
 
     const output: ISearchNeuron[] = await storageManager.Search.Neuron.findAll({});
+
+    debug(`found ${output.length} existing neurons`);
 
     // All known neurons in search database to we can look up existing.  The global neuronMap should only be neurons
     // will be part of the updated database to drive downstream entity behaviors.
@@ -124,6 +136,8 @@ async function syncNeurons() {
 
     let skipped = 0;
 
+    const somaStructureIdentifier = await storageManager.Search.StructureIdentifier.findOne({where: {value: StructureIdentifiers.soma}});
+
     await Promise.all(input.map(async (n) => {
         const neuron = localNeuronMap.get(n.id);
 
@@ -132,14 +146,43 @@ async function syncNeurons() {
 
             let userDefinedBrainArea = false;
 
-            if (!n.brainAreaId) {
-                const i = await storageManager.Sample.Injection.findById(n.injectionId);
-
-                const brainArea = await getBrainArea(i.brainAreaId);
-
-                // searchNeuron.brainAreaId = brainArea.id;
-            } else {
+            if (n.brainAreaId !== null) {
                 userDefinedBrainArea = true;
+                debug(`neuron ${n.idString} is user defined brain area`);
+            } else {
+                debug(`neuron ${n.idString} requires brain area lookup`);
+                const swcTracings = await storageManager.Swc.SwcTracing.findAll({
+                    where: {neuronId: n.id}
+                });
+
+                if (swcTracings.length > 0) {
+                    const tracings = await storageManager.Transform.Tracing.findAll({
+                        where: {swcTracingId: {[Op.in]: swcTracings.map(s => s.id)}}
+                    });
+
+                    if (tracings.length > 0) {
+                        const somas = await storageManager.Transform.TracingNode.findAll({
+                            where: {
+                                tracingId: {[Op.in]: tracings.map(t => t.id)},
+                                structureIdentifierId: somaStructureIdentifier.id
+                            }
+                        });
+
+                        let idx = 0;
+
+                        while (idx < somas.length) {
+                            if (somas[idx].brainAreaId !== null) {
+                                searchNeuron.brainAreaId = somas[idx].brainAreaId;
+                                break;
+                            }
+                            idx++;
+                        }
+                    }
+                }
+
+                if (searchNeuron.brainAreaId === null) {
+                    debug(`failed to look up brain area id for neuron ${n.idString} from tracings`);
+                }
             }
 
             const visibility = n.sharing === ShareVisibility.Inherited ? n.injection.sample.sharing : n.sharing;
@@ -223,8 +266,6 @@ async function syncTracings() {
 
         const neuron = await storageManager.Sample.Neuron.findById(swcTracing.neuronId);
 
-        // None of the neuron properties directly affect search tracing properties, so even if the neuron is being
-        // updated, we do not need to update the tracing if its source tracing or swc tracing have not changed.
         if (!tracing || t.updatedAt > tracing.updatedAt || swcTracing.updatedAt > tracing.updatedAt || (neuron !== null && (neuron.updatedAt > tracing.updatedAt))) {
             const searchTracing: ISearchTracingAttributes = Object.assign(t.toJSON());
 
@@ -537,12 +578,4 @@ async function removeNeurons() {
             }
         }
     });
-}
-
-async function getBrainArea(id: string): Promise<ISearchBrainArea> {
-    if (id) {
-        return storageManager.Search.BrainArea.findById(id);
-    } else {
-        return null;
-    }
 }
