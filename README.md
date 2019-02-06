@@ -67,7 +67,7 @@ From there use
 
 `yarn run export`
 
-## Optimized Search
+## Optimized Search (Internal)
 This functionality transforms tracings and any associated data required for the search service into a format more suitable
 for search/query performance.  Although the code has been implemented to support delta, that functionality is not well-tested.
 At this time is likely better to drop the existing tables and repopulate from scratch.
@@ -86,6 +86,63 @@ Perform the migration
 `yarn run optimize`
 
 You will see the relative progress as the content is transformed.  It can take several minutes to complete.
+
+## Optimized Search (External)
+This is similar to the above process for internal the search database.  The primary difference is the optimized output is stored
+in a different search database that only contains neurons marked for public use.  This allows for a simple database
+dump and restore on the external service.
+
+In the internal deploy diretory, load the configuration
+
+`source options.sh`
+
+If the public search database has never been populated or the schema has been changed, it must be migrated.  Start an interactive session with a 
+sample-api container
+
+`docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -e DATABASE_PW=${DATABASE_PW} mouselightdatabrowser/search-api:1.4 /bin/bash`
+
+In the container shell, point to the public search database instance
+
+`export SEARCH_DB_HOST=search-public-db`
+
+and migrate
+
+`./migrate.sh`
+
+You can now exit the container.
+
+Start an interactive session with a data-services container connected to the system
+
+`docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -e DATABASE_PW=${DATABASE_PW} -v /data/sites/mnb/:/opt/data mouselightdatabrowser/data-services:1.4 /bin/bash`
+
+In the container shell, point to the public search database instance and enable feedback
+
+`export SEARCH_DB_HOST=search-public-db`
+
+`export DEBUG=mnb*`
+
+Perform the translation using only neurons with a visibility level of public (4)
+
+`node optimize/optimize.js 4`
+
+You will see the relative progress as the content is transformed.  It can take several minutes to complete.
+
+Dump the resulting database for import into the external instance (you will need to enter the database password).
+
+`pg_dump -h search-public-db -p 5432 -U postgres search_production | gzip > /opt/data/backup/search-public/search-public.pg.gz`
+
+Start an interactive data-services container on the host and docker network that containers the public instance and execute
+the following commands (assumings a similar volume mapping above to expose the .pg file in the location below)
+
+`psql -h search-db -p 5432 -U postgres -d search_production -c "DROP SCHEMA public CASCADE;"`
+
+`psql -h search-db -p 5432 -U postgres -d search_production -c "CREATE SCHEMA public;"`
+
+`psql -h search-db -p 5432 -U postgres -d search_production -c "GRANT ALL ON SCHEMA public TO postgres;"`
+
+`psql -h search-db -p 5432 -U postgres -d search_production -c "GRANT ALL ON SCHEMA public TO public;"`
+
+`psql -h search-db -p 5432 -U postgres -d search_production -f /opt/data/backup/search-public/search-public.pg`
 
 ## Synthetic
 The synthetic script will populate the first three databases with generated data.  This a development script and is not
