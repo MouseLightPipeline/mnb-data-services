@@ -232,7 +232,7 @@ async function syncNeurons() {
         const neuron = localNeuronMap.get(n.id);
 
         if (!neuron || n.updatedAt > neuron.updatedAt || n.injection.sample.updatedAt > neuron.updatedAt) {
-            const searchNeuron: ISearchNeuronAttributes = Object.assign(n.toJSON(), {searchScope: SearchScope.Team});
+            const searchNeuron: ISearchNeuronAttributes = Object.assign(n.toJSON(), {searchScope: SearchScope.Team, sampleId: n.injection.sample.id});
 
             let userDefinedBrainArea = false;
 
