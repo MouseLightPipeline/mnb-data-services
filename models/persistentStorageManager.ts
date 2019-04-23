@@ -13,6 +13,8 @@ import {ISearchNeuronTable} from "./search/neuron";
 import {ISearchBrainAreaTable} from "./search/brainArea";
 import {ISearchTracingNodeTable} from "./search/tracingNode";
 import {ISearchTracingStructureTable} from "./search/tracingStructure";
+import {ISearchMouseStrainTable} from "./search/mouseStrain";
+import {ISearchSampleTable} from "./search/sample";
 
 export interface ISampleDatabaseModels {
     BrainArea?: any
@@ -41,6 +43,8 @@ export interface ITransformDatabaseModels {
 export class SearchTables {
     public constructor() {
         this.BrainArea = null;
+        this.MouseStrain = null;
+        this.Sample = null;
         this.Neuron = null;
         this.SearchContent = null;
         this.StructureIdentifier = null;
@@ -50,6 +54,8 @@ export class SearchTables {
     }
 
     BrainArea: ISearchBrainAreaTable;
+    MouseStrain: ISearchMouseStrainTable;
+    Sample: ISearchSampleTable;
     Neuron: ISearchNeuronTable;
     SearchContent: ISearchContentTable;
     StructureIdentifier: ISearchStructureIdentifierTable;

@@ -9,6 +9,8 @@ import {ISwcTracing} from "../models/swc/tracing";
 import {ISearchTracingNode} from "../models/search/tracingNode";
 import {ISearchContentAttributes} from "../models/search/searchContent";
 import uuid = require("uuid");
+import {ISample} from "../models/sample/sample";
+import {ISearchSample, ISearchSampleAttributes} from "../models/search/sample";
 
 const debug = require("debug")("mnb:data:search:generate-contents");
 
@@ -24,6 +26,9 @@ const Op = Sequelize.Op;
 const NODE_INSERT_INCREMENT = 25000;
 
 const storageManager = PersistentStorageManager.Instance();
+
+// All samples
+const sampleMap = new Map<string, ISearchSample>();
 
 // All neurons
 const neuronMap = new Map<string, ISearchNeuron>();
@@ -43,6 +48,7 @@ const updateRequiredForTracings: string[] = [];
 
 const tracingsSomaMap = new Map<string, ISearchTracingNode>();
 
+let sampleRemoveIds: string[] = [];
 let neuronRemoveIds: string[] = [];
 let tracingRemoveIds: string[] = [];
 
@@ -66,6 +72,10 @@ function generateContents(): Promise<boolean> {
             await syncStructureIdentifiers();
 
             await syncTracingStructures();
+
+            await syncMouseStrains();
+
+            await syncSamples();
 
             await syncNeurons();
 
@@ -101,6 +111,86 @@ async function syncStructureIdentifiers() {
 
 async function syncTracingStructures() {
     await simpleSync(storageManager.Swc.TracingStructure, storageManager.Search.TracingStructure, "tracing structures");
+}
+
+async function syncMouseStrains() {
+    await simpleSync(storageManager.Sample.MouseStrain, storageManager.Search.MouseStrain, "mouse strains");
+}
+
+async function syncSamples() {
+    let input: ISample[] = await storageManager.Sample.Sample.findAll({
+        include: [{
+            model: storageManager.Sample.MouseStrain,
+            as: "mouseStrain",
+            include: [{
+                model: storageManager.Sample.Sample,
+                as: "sample"
+            }]
+        }]
+    });
+
+    debug(`found ${input.length} samples neurons`);
+
+    input = input.filter(s => {
+        return s.sharing >= minVisibility;
+    });
+
+    debug(`${input.length} input samples meet visibility requirements`);
+
+    const output: ISearchSample[] = await storageManager.Search.Sample.findAll({});
+
+    debug(`found ${output.length} existing samples`);
+
+    // All known samples in search database to we can look up existing.  The global sampleMap should only be samples
+    // will be part of the updated database to drive downstream entity behaviors.
+    const localSampleMap = new Map<string, ISearchSample>();
+
+    output.map(s => localSampleMap.set(s.id, s));
+
+    let skipped = 0;
+
+    await Promise.all(input.map(async (s) => {
+        const sample = localSampleMap.get(s.id);
+
+        if (!sample || s.updatedAt > sample.updatedAt) {
+            const searchSample: ISearchSampleAttributes = Object.assign(s.toJSON(), {searchScope: SearchScope.Team});
+
+            switch (s.sharing) {
+                case ShareVisibility.ShareAllExternal:
+                    searchSample.searchScope = SearchScope.Public;
+                    break;
+                case ShareVisibility.ShareAllInternal:
+                    searchSample.searchScope = SearchScope.Internal;
+                    break;
+                case ShareVisibility.DoNotShare:
+                    searchSample.searchScope = SearchScope.Team;
+                    break;
+                default:
+                    debug(`could not determine visibility of ${s.idNumber} - defaulting to private`);
+                    searchSample.searchScope = SearchScope.Private;
+            }
+
+            searchSample.updatedAt = new Date();
+
+            const [model] = await storageManager.Search.Sample.upsert(searchSample, {returning: true});
+
+            sampleMap.set(model.id, model);
+
+        } else {
+            sampleMap.set(sample.id, sample);
+            skipped++;
+        }
+    }));
+
+    if (skipped > 0) {
+        debug(`${skipped} samples did not change and were skipped`);
+    }
+
+    sampleRemoveIds = _.differenceBy(output, input, "id").map(r => r.id);
+
+    if (sampleRemoveIds.length > 0) {
+        debug(`${sampleRemoveIds.length} neuron(s) pending removal`);
+    }
 }
 
 async function syncNeurons() {
