@@ -8,12 +8,10 @@ export interface ISearchSampleAttributes {
     animalId?: string;
     tag?: string;
     comment?: string;
-    sampleDate?: Date;
     mouseStrainId?: string;
     searchScope?: number;
     createdAt?: Date;
     updatedAt?: Date;
-    deletedAt?: Date;
 }
 
 export interface ISearchSample extends Instance<ISearchSampleAttributes>, ISearchSampleAttributes {
@@ -21,7 +19,6 @@ export interface ISearchSample extends Instance<ISearchSampleAttributes>, ISearc
 }
 
 export interface ISearchSampleTable extends Model<ISearchSample, ISearchSampleAttributes> {
-    MouseStrainTable: ISearchMouseStrainTable;
 }
 
 export const TableName = "Sample";
@@ -50,16 +47,12 @@ export function sequelizeImport(sequelize, DataTypes: DataTypes): ISearchSampleT
         searchScope: DataTypes.INTEGER
     }, {
         timestamps: true,
-        paranoid: true
+        freezeTableName: true
     });
 
     Sample.associate = (models: Models) => {
         Sample.belongsTo(models.MouseStrain, {foreignKey: "mouseStrainId", as: "mouseStrain"});
-
-        Sample.MouseStrainTable = models.MouseStrain as ISearchMouseStrainTable;
     };
-
-    Sample.MouseStrainTable = null;
 
     return Sample;
 }

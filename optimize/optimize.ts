@@ -121,15 +121,11 @@ async function syncSamples() {
     let input: ISample[] = await storageManager.Sample.Sample.findAll({
         include: [{
             model: storageManager.Sample.MouseStrain,
-            as: "mouseStrain",
-            include: [{
-                model: storageManager.Sample.Sample,
-                as: "sample"
-            }]
+            as: "mouseStrain"
         }]
     });
 
-    debug(`found ${input.length} samples neurons`);
+    debug(`found ${input.length} samples`);
 
     input = input.filter(s => {
         return s.sharing >= minVisibility;
@@ -230,8 +226,9 @@ async function syncNeurons() {
 
     await Promise.all(input.map(async (n) => {
         const neuron = localNeuronMap.get(n.id);
+        const sample = sampleMap.get(n.injection.sampleId);
 
-        if (!neuron || n.updatedAt > neuron.updatedAt || n.injection.sample.updatedAt > neuron.updatedAt) {
+        if (!neuron || n.updatedAt > neuron.updatedAt || sample.updatedAt > neuron.updatedAt) {
             const searchNeuron: ISearchNeuronAttributes = Object.assign(n.toJSON(), {searchScope: SearchScope.Team, sampleId: n.injection.sample.id});
 
             let userDefinedBrainArea = false;

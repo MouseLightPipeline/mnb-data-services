@@ -29,7 +29,7 @@ export function sequelizeImport(sequelize, DataTypes: DataTypes): ISearchMouseSt
         name: DataTypes.TEXT
     }, {
         timestamps: true,
-        paranoid: true
+        freezeTableName: true
     });
 
     MouseStrain.associate = (models: Models) => {
