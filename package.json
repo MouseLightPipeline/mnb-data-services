@@ -1,6 +1,6 @@
 {
   "name": "mnb-data-services",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "private": true,
   "description": "Management of data volumes.  Backup, export, optimize, and synthesize.",
   "author": "Patrick Edson <pedson@leapscientific.com>",
