@@ -92,7 +92,12 @@ This is similar to the above process for internal the search database.  The prim
 in a different search database that only contains neurons marked for public use.  This allows for a simple database
 dump and restore on the external service.
 
-In the internal deploy diretory, load the configuration
+Most of these actions are performed using the internal instances to prepare, stage, and export the data.  The final step involves
+importing the staged data into the actual public instance.
+
+#### Migration (if required)
+
+In the internal deploy directory, load the configuration
 
 `source options.sh`
 
@@ -111,6 +116,8 @@ and migrate
 
 You can now exit the container.
 
+#### Update Staging Instance of Public Database
+
 Start an interactive session with a data-services container connected to the system
 
 `docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -e DATABASE_PW=${DATABASE_PW} -v /data/sites/mnb/:/opt/data mouselightdatabrowser/data-services:1.4 /bin/bash`
@@ -127,10 +134,13 @@ Perform the translation using only neurons with a visibility level of public (4)
 
 You will see the relative progress as the content is transformed.  It can take several minutes to complete.
 
+#### Dump Staged Data
+
 Dump the resulting database for import into the external instance (you will need to enter the database password).
 
 `pg_dump -h search-public-db -p 5432 -U postgres search_production | gzip > /opt/data/backup/search-public/search-public.pg.gz`
 
+#### Load Staged Data to Public Instance
 Start an interactive data-services container on the host and docker network that containers the public instance and execute
 the following commands (assumings a similar volume mapping above to expose the .pg file in the location below)
 
