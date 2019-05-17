@@ -116,7 +116,10 @@ and migrate
 
 You can now exit the container.
 
-#### Update Staging Instance of Public Database
+#### Update Internal Instance of Public Database
+
+The internal instance of the public database is a database container accessible from the internal compose network and
+services.  It is not the 
 
 Start an interactive session with a data-services container connected to the system
 
@@ -134,15 +137,54 @@ Perform the translation using only neurons with a visibility level of public (4)
 
 You will see the relative progress as the content is transformed.  It can take several minutes to complete.
 
-#### Dump Staged Data
+#### Dump Public Data
 
 Dump the resulting database for import into the external instance (you will need to enter the database password).
 
 `pg_dump -h search-public-db -p 5432 -U postgres search_production | gzip > /opt/data/backup/search-public/search-public.pg.gz`
 
-#### Load Staged Data to Public Instance
-Start an interactive data-services container on the host and docker network that containers the public instance and execute
-the following commands (assumings a similar volume mapping above to expose the .pg file in the location below)
+#### Load Public Data to Staging and/or Public Instance
+
+The staging instance refers to a complete instance of the `mnb-public-deploy` system on an internal network for testing
+and validation.  The public instance refers the external, generally accessible instance.
+
+##### Staging Instance
+Start an interactive data-services container on the host and docker network that contains the public instance: 
+
+`source env.sh`
+
+followed by
+
+`docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -e PGPASSWORD=${DATABASE_PW} -v /data/sites/mnb/:/opt/data mouselightdatabrowser/data-services:1.4 /bin/bash`
+
+Execute the following commands (assumings a similar volume mapping above to expose the .pg file in the location below)
+
+`psql -h search-db -p 5432 -U postgres -d search_production -c "DROP SCHEMA public CASCADE;"`
+
+`psql -h search-db -p 5432 -U postgres -d search_production -c "CREATE SCHEMA public;"`
+
+`psql -h search-db -p 5432 -U postgres -d search_production -c "GRANT ALL ON SCHEMA public TO postgres;"`
+
+`psql -h search-db -p 5432 -U postgres -d search_production -c "GRANT ALL ON SCHEMA public TO public;"`
+
+`psql -h search-db -p 5432 -U postgres -d search_production -f /opt/data/backup/search-public/search-public.pg`
+
+##### Public Instance
+Start an interactive data-services container on the host and docker network that contains the public instance: 
+
+`source env.sh`
+
+followed by
+
+`docker run -it --rm --network mnbblue_back_tier -e NODE_ENV=production -e PGPASSWORD=${DATABASE_PW} -v /data/mnb/blue:/opt/data mouselightdatabrowser/data-services:1.4 /bin/bash`
+
+or 
+
+`docker run -it --rm --network mnbgreen_back_tier -e NODE_ENV=production -e PGPASSWORD=${DATABASE_PW} -v /data/mnb/green:/opt/data mouselightdatabrowser/data-services:1.4 /bin/bash`
+
+depending on whether blue or green is next update.
+
+Execute the following commands (assumings a similar volume mapping above to expose the .pg file in the location below)
 
 `psql -h search-db -p 5432 -U postgres -d search_production -c "DROP SCHEMA public CASCADE;"`
 
