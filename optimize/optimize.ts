@@ -235,9 +235,9 @@ async function syncNeurons() {
 
             if (n.brainAreaId !== null) {
                 userDefinedBrainArea = true;
-                debug(`neuron ${n.idString} is user defined brain area`);
+                // debug(`neuron ${n.idString} is user defined brain area`);
             } else {
-                debug(`neuron ${n.idString} requires brain area lookup`);
+                // debug(`neuron ${n.idString} requires brain area lookup`);
                 const swcTracings = await storageManager.Swc.SwcTracing.findAll({
                     where: {neuronId: n.id}
                 });
@@ -255,16 +255,32 @@ async function syncNeurons() {
                             }
                         });
 
+                        if (somas.length === 0) {
+                            debug(`neuron ${n.idString} requires soma look up but there are no somas in the tracings`);
+                        }
+
                         let idx = 0;
+
+                        let found = false;
 
                         while (idx < somas.length) {
                             if (somas[idx].brainAreaId !== null) {
                                 searchNeuron.brainAreaId = somas[idx].brainAreaId;
+                                found = true;
                                 break;
                             }
                             idx++;
                         }
+
+                        if (!found) {
+                            debug(`neuron ${n.idString} requires soma look up but there are none of the somas reference a brain area`);
+                        }
+
+                    } else {
+                        debug(`neuron ${n.idString} requires soma look up but has no transformed tracings`);
                     }
+                } else {
+                    debug(`neuron ${n.idString} requires soma look up but has no swc tracings`);
                 }
 
                 if (searchNeuron.brainAreaId === null) {
