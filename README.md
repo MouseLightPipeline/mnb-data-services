@@ -155,7 +155,7 @@ Start an interactive data-services container on the host and docker network that
 
 followed by
 
-`docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -e PGPASSWORD=${DATABASE_PW} -v /data/sites/mnb/:/opt/data mouselightdatabrowser/data-services:1.4 /bin/bash`
+`docker run -it --rm --network mnb-public_back_tier -e NODE_ENV=production -e PGPASSWORD=${DATABASE_PW} -v /data/sites/mnb/:/opt/data mouselightdatabrowser/data-services:1.4 /bin/bash`
 
 Execute the following commands (assumings a similar volume mapping above to expose the .pg file in the location below)
 
@@ -170,17 +170,21 @@ Execute the following commands (assumings a similar volume mapping above to expo
 `psql -h search-db -p 5432 -U postgres -d search_production -f /opt/data/backup/search-public/search-public.pg`
 
 ##### Public Instance
+
+_Note that the search database container for the blue or green instance to be updated may need to be (re)started 
+prior to the followings if it is the current offline instance._
+
 Start an interactive data-services container on the host and docker network that contains the public instance: 
 
-`source env.sh`
+`source env`
 
-followed by
+followed by (assumes search database dump has placed in `data-import` in the respective instance location)
 
-`docker run -it --rm --network mnbblue_back_tier -e NODE_ENV=production -e PGPASSWORD=${DATABASE_PW} -v /data/mnb/blue:/opt/data mouselightdatabrowser/data-services:1.4 /bin/bash`
+`docker run -it --rm --network mnbblue_back_tier -e NODE_ENV=production -e PGPASSWORD=${DATABASE_PW} -v /data/mnb/blue/data-import:/opt/data mouselightdatabrowser/data-services:1.4 /bin/bash`
 
 or 
 
-`docker run -it --rm --network mnbgreen_back_tier -e NODE_ENV=production -e PGPASSWORD=${DATABASE_PW} -v /data/mnb/green:/opt/data mouselightdatabrowser/data-services:1.4 /bin/bash`
+`docker run -it --rm --network mnbgreen_back_tier -e NODE_ENV=production -e PGPASSWORD=${DATABASE_PW} -v /data/mnb/green/data-import:/opt/data mouselightdatabrowser/data-services:1.4 /bin/bash`
 
 depending on whether blue or green is next update.
 
@@ -194,7 +198,7 @@ Execute the following commands (assumings a similar volume mapping above to expo
 
 `psql -h search-db -p 5432 -U postgres -d search_production -c "GRANT ALL ON SCHEMA public TO public;"`
 
-`psql -h search-db -p 5432 -U postgres -d search_production -f /opt/data/backup/search-public/search-public.pg`
+`psql -h search-db -p 5432 -U postgres -d search_production -f /opt/data/search-public.pg`
 
 ## Synthetic
 The synthetic script will populate the first three databases with generated data.  This a development script and is not
