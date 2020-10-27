@@ -4,6 +4,13 @@ import {IInjection, IInjectionTable} from "./injection";
 import {IBrainArea, IBrainAreaTable} from "./brainArea";
 import {ISampleTable} from "./sample";
 
+export enum ConsensusStatus {
+    None,
+    Pending,
+    Limited,
+    Full
+}
+
 export interface INeuronAttributes {
     id: string;
     idNumber: number;
@@ -15,6 +22,7 @@ export interface INeuronAttributes {
     z: number;
     doi: string;
     sharing: number;
+    consensus: ConsensusStatus;
     brainAreaId: string;
     injectionId: string;
     createdAt: Date;
@@ -76,6 +84,10 @@ export function sequelizeImport(sequelize, DataTypes: DataTypes): INeuronTable {
         },
         doi: {
             type: DataTypes.TEXT
+        },
+        consensus: {
+            type: DataTypes.INTEGER,
+            defaultValue: 1
         }
     }, {
         timestamps: true,

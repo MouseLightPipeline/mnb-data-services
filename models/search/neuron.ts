@@ -1,4 +1,5 @@
 import {Sequelize, DataTypes, Instance, Model} from "sequelize";
+import {ConsensusStatus} from "../sample/neuron";
 
 export enum SearchScope {
     Private = 0,
@@ -20,6 +21,7 @@ export interface ISearchNeuronAttributes {
     x: number;
     y: number;
     z: number;
+    consensus: ConsensusStatus;
     brainAreaId: string;
     searchScope: SearchScope;
     createdAt?: Date;
@@ -48,7 +50,8 @@ export function sequelizeImport(sequelize: Sequelize, DataTypes: DataTypes): any
         y: DataTypes.DOUBLE,
         z: DataTypes.DOUBLE,
         searchScope: DataTypes.INTEGER,
-        doi: DataTypes.TEXT
+        doi: DataTypes.TEXT,
+        consensus: DataTypes.INTEGER,
     }, {
         timestamps: true,
         freezeTableName: true
