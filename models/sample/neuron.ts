@@ -5,10 +5,11 @@ import {IBrainArea, IBrainAreaTable} from "./brainArea";
 import {ISampleTable} from "./sample";
 
 export enum ConsensusStatus {
-    None,
+    Full,
+    Partial,
+    Single,
     Pending,
-    Limited,
-    Full
+    None
 }
 
 export interface INeuronAttributes {

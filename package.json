@@ -1,6 +1,6 @@
 {
   "name": "mnb-data-services",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "private": true,
   "description": "Management of data volumes.  Backup, export, optimize, and synthesize.",
   "author": "Patrick Edson <pedson@leapscientific.com>",
@@ -8,19 +8,20 @@
   "dockerRepository": "mouselightdatabrowser",
   "dockerImageName": "data-services",
   "scripts": {
-    "backup": "DEBUG=mnb:* node $NODE_DEBUG_OPTION backup/backup.js",
-    "restore": "DEBUG=mnb:* node $NODE_DEBUG_OPTION restore/restore.js",
-    "export": "DEBUG=mnb:* node $NODE_DEBUG_OPTION export/export.js",
-    "optimize": "DEBUG=mnb:* node $NODE_DEBUG_OPTION optimize/optimize.js",
-    "synthesize": "DEBUG=mnb:* node $NODE_DEBUG_OPTION synthesize/synthesize.js",
-    "metrics": "DEBUG=mnb:* node $NODE_DEBUG_OPTION export/metrics.js",
-    "docker-build": "gulp docker-build",
-    "docker-release": "gulp release"
+    "backup": "node backup/backup.js",
+    "restore": "node restore/restore.js",
+    "export": "node export/export.js",
+    "optimize": "node optimize/optimize.js",
+    "metrics": "node export/metrics.js",
+    "clean": "tsc && gulp clean",
+    "compile": "tsc && gulp compile",
+    "build": "tsc && gulp build",
+    "docker-build": "tsc && gulp docker-build",
+    "docker-release": "tsc && gulp release"
   },
   "dependencies": {
     "debug": "^3.1.0",
     "fs-extra": "^7.0.0",
-    "hdf5": "https://github.com/pedson/hdf5.node.git",
     "lodash": "^4.17.4",
     "moment": "^2.18.0",
     "pg": "^7.4.3",
@@ -32,13 +33,15 @@
   "devDependencies": {
     "@types/debug": "^0.0.30",
     "@types/fs-extra": "^5.0.4",
-    "@types/gulp": "^3",
+    "@types/gulp": "^4.0.7",
     "@types/gulp-shell": "^0.0.30",
     "@types/lodash": "^4.14.78",
     "@types/moment": "^2.13.0",
     "@types/sequelize": "^4.0.53",
     "@types/uuid": "^3.4.2",
-    "gulp": "^3.9.1",
-    "gulp-shell": "^0.6.5"
+    "del": "^6.0.0",
+    "gulp": "^4.0.2",
+    "gulp-shell": "^0.6.5",
+    "merge-stream": "^2.0.0"
   }
 }

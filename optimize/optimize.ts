@@ -305,6 +305,8 @@ async function syncNeurons() {
                     searchNeuron.searchScope = SearchScope.Private;
             }
 
+            searchNeuron.consensus = n.consensus;
+
             searchNeuron.updatedAt = new Date();
 
             const [model] = await storageManager.Search.Neuron.upsert(searchNeuron, {returning: true});
@@ -554,6 +556,7 @@ async function syncSearchContent() {
 
         obj.neuronIdString = neuron.idString;
         obj.neuronDOI = neuron.doi;
+        obj.neuronConsensus = neuron.consensus;
 
         obj.searchScope = neuron.searchScope;
 

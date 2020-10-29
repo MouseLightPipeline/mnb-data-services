@@ -1,5 +1,6 @@
 import {Instance, Model} from "sequelize";
 import {SearchScope} from "./neuron";
+import {ConsensusStatus} from "../sample/neuron";
 
 export interface ISearchContentAttributes {
     id: string;
@@ -10,6 +11,7 @@ export interface ISearchContentAttributes {
     brainAreaId: string;
     neuronIdString: string;
     neuronDOI: string;
+    neuronConsensus: ConsensusStatus;
     somaX: number;
     somaY: number;
     somaZ: number;
@@ -37,6 +39,7 @@ export function sequelizeImport(sequelize, DataTypes) {
         searchScope: DataTypes.INTEGER,
         neuronIdString: DataTypes.TEXT,
         neuronDOI: DataTypes.TEXT,
+        neuronConsensus: DataTypes.INTEGER,
         somaX: DataTypes.DOUBLE,
         somaY: DataTypes.DOUBLE,
         somaZ: DataTypes.DOUBLE,
