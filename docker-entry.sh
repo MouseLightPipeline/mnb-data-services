@@ -2,4 +2,4 @@
 
 export DEBUG=mnb*
 
-backup.sh
+./backup.sh

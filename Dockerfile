@@ -1,36 +1,12 @@
-FROM node:8.12
-
-RUN cd /tmp; wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0-patch1/src/hdf5-1.10.0-patch1.tar.gz
-RUN cd /tmp; tar xvzf hdf5-1.10.0-patch1.tar.gz
-RUN cd /tmp/hdf5-1.10.0-patch1; ./configure --prefix=/usr/local --enable-cxx
-RUN cd /tmp/hdf5-1.10.0-patch1; make
-RUN cd /tmp/hdf5-1.10.0-patch1; make install
-
-ENV PG_APP_HOME="/etc/docker-postgresql"\
-    PG_VERSION=9.6 \
-    PG_USER=postgres \
-    PG_HOME=/var/lib/postgresql \
-    PG_RUNDIR=/run/postgresql \
-    PG_LOGDIR=/var/log/postgresql \
-    PG_CERTDIR=/etc/postgresql/certs
-
-ENV PG_BINDIR=/usr/lib/postgresql/${PG_VERSION}/bin \
-    PG_DATADIR=${PG_HOME}/${PG_VERSION}/main
-
-RUN printf "deb http://archive.debian.org/debian/ jessie main\ndeb-src http://archive.debian.org/debian/ jessie main\ndeb http://security.debian.org jessie/updates main\ndeb-src http://security.debian.org jessie/updates main" > /etc/apt/sources.list
-
-RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
- && echo 'deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main' > /etc/apt/sources.list.d/pgdg.list \
- && apt-get update \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y acl \
-      postgresql-${PG_VERSION} postgresql-client-${PG_VERSION} postgresql-contrib-${PG_VERSION} \
- && ln -sf ${PG_DATADIR}/postgresql.conf /etc/postgresql/${PG_VERSION}/main/postgresql.conf \
- && ln -sf ${PG_DATADIR}/pg_hba.conf /etc/postgresql/${PG_VERSION}/main/pg_hba.conf \
- && ln -sf ${PG_DATADIR}/pg_ident.conf /etc/postgresql/${PG_VERSION}/main/pg_ident.conf \
- && rm -rf ${PG_HOME} \
- && rm -rf /var/lib/apt/lists/*
+FROM node:12.9
 
 WORKDIR /apps
+
+RUN apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net --recv-keys B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
+
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+
+RUN apt-get update && apt-get install -y software-properties-common postgresql-9.3 postgresql-client-9.3 postgresql-contrib-9.3
 
 COPY dist .
 
