@@ -6,7 +6,7 @@ RUN apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net --recv-keys B97B0A
 
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 
-RUN apt-get update && apt-get install -y software-properties-common postgresql-9.3 postgresql-client-9.3 postgresql-contrib-9.3
+RUN apt-get update && apt-get install -y software-properties-common postgresql-9.6 postgresql-client-9.6 postgresql-contrib-9.6
 
 COPY dist .
 
