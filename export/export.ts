@@ -173,6 +173,7 @@ function swcHeader(sample: ISample, mouse: IMouseStrain, virus: IInjectionVirus,
         + `# Sample Strain:\t\t${mouse.name}\n`
         + `# Label Virus:\t\t\t${virus.name}\n`
         + `# Label Fluorophore:\t${fluorophore.name}\n`
+        + `# Annotation space:\tCCFv2.5 (ML legacy) Axes> Z: Anterior-Posterior; Y: Superior-Inferior; X:Left-Right`;
 }
 
 function mapToSwc(nodes: ISearchTracingNode[], pathStructure: number, offset: number = 0): string {
@@ -238,6 +239,10 @@ async function mapToJSON(sample: ISample, mouse: IMouseStrain, virus: IInjection
                 virus: virus.name,
                 fluorophore: fluorophore.name
             },
+            annotationSpace: {
+                version: 2.5,
+                description: "CCFv2.5 (ML legacy) Axes> Z: Anterior-Posterior; Y: Superior-Inferior; X:Left-Right",
+            } ,
             soma: somaObj,
             axon: axonNodes.map(n => {
                 if (n.brainAreaId) allenIds.push(n.brainAreaId);
