@@ -173,7 +173,7 @@ function swcHeader(sample: ISample, mouse: IMouseStrain, virus: IInjectionVirus,
         + `# Sample Strain:\t\t${mouse.name}\n`
         + `# Label Virus:\t\t\t${virus.name}\n`
         + `# Label Fluorophore:\t\t${fluorophore.name}\n`
-        + `# Annotation space:\t\tCCFv2.5 (ML legacy) Axes> Z: Anterior-Posterior; Y: Superior-Inferior; X:Left-Right\n`;
+        + `# Annotation Space:\t\tCCFv2.5 (ML legacy) Axes> Z: Anterior-Posterior; Y: Superior-Inferior; X:Left-Right\n`;
 }
 
 function mapToSwc(nodes: ISearchTracingNode[], pathStructure: number, offset: number = 0): string {
