@@ -83,6 +83,8 @@ and start an interactive session connected to the system
 
 Perform the migration
 
+`export DEBUG=mnb*`
+
 `yarn run optimize`
 
 You will see the relative progress as the content is transformed.  It can take several minutes to complete.
