@@ -1,53 +1,79 @@
-import {Instance, Model} from "sequelize";
+import {BelongsToGetAssociationMixin, DataTypes, Sequelize} from "sequelize";
 
-export interface ISearchTracingNodeAttributes {
-    id: string;
+import {BaseModel} from "../transform/baseModel";
+import {SearchTracing} from "./tracing";
+import {SearchStructureIdentifier} from "./structureIdentifier";
+import {SearchBrainArea} from "./brainArea";
+
+export interface IPageInput {
     tracingId: string;
-    structureIdentifierId: string;
-    brainAreaId: string;
-    swcNodeId: string;
-    sampleNumber: number;
-    parentNumber: number;
-    x: number;
-    y: number;
-    z: number;
-    radius: number;
-    lengthToParent: number;
+    offset: number;
+    limit: number;
 }
 
-export interface ISearchTracingNode extends Instance<ISearchTracingNodeAttributes>, ISearchTracingNodeAttributes {
+export interface INodePage {
+    offset: number;
+    limit: number;
+    totalCount: number;
+    hasNextPage: boolean;
+    nodes: SearchTracingNode[];
 }
 
-export interface ISearchTracingNodeTable extends Model<ISearchTracingNode, ISearchTracingNodeAttributes> {
+export type SearchTracingNodeAttributes = {
+    sampleNumber?: number;
+    parentNumber?: number;
+    x?: number;
+    y?: number;
+    z?: number;
+    radius?: number;
+    lengthToParent?: number;
+    structureIdentifierId?: string;
+    brainAreaId?: string;
 }
 
-export const TableName = "TracingNode";
+export class SearchTracingNode extends BaseModel {
+    public sampleNumber: number;
+    public parentNumber: number;
+    public x: number;
+    public y: number;
+    public z: number;
+    public radius: number;
+    public lengthToParent: number;
+    public structureIdentifierId: string;
+    public brainAreaId: string;
 
-export function sequelizeImport(sequelize, DataTypes) {
-    const TracingNode = sequelize.define(TableName, {
+    public getTracing!: BelongsToGetAssociationMixin<SearchTracing>;
+}
+
+export const modelInit = (sequelize: Sequelize) => {
+    SearchTracingNode.init({
         id: {
             primaryKey: true,
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4
         },
+        // Unchanged values
         sampleNumber: DataTypes.INTEGER,
         parentNumber: DataTypes.INTEGER,
         radius: DataTypes.DOUBLE,
         lengthToParent: DataTypes.DOUBLE,
+        structureIdentifierId: DataTypes.UUID,
+        // Modified values
         x: DataTypes.DOUBLE,
         y: DataTypes.DOUBLE,
         z: DataTypes.DOUBLE,
-        swcNodeId: DataTypes.UUID
+        // Outside refs
+        swcNodeId: DataTypes.UUID,
+        brainAreaId: DataTypes.UUID
     }, {
+        tableName: "TracingNode",
         timestamps: false,
-        freezeTableName: true
+        sequelize
     });
+};
 
-    TracingNode.associate = models => {
-        TracingNode.belongsTo(models.Tracing, {foreignKey: "tracingId"});
-        TracingNode.belongsTo(models.StructureIdentifier, {foreignKey: "structureIdentifierId"});
-        TracingNode.belongsTo(models.BrainArea, {foreignKey: "brainAreaId"});
-    };
-
-    return TracingNode;
-}
+export const modelAssociate = () => {
+    SearchTracingNode.belongsTo(SearchTracing, {foreignKey: "tracingId"});
+    SearchTracingNode.belongsTo(SearchStructureIdentifier, {foreignKey: "structureIdentifierId"});
+    SearchTracingNode.belongsTo(SearchBrainArea, {foreignKey: "brainAreaId"});
+};

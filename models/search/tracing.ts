@@ -1,32 +1,48 @@
-import {Instance, Model} from "sequelize";
-import {ISearchTracingNode} from "./tracingNode";
+import {BelongsToGetAssociationMixin, DataTypes, HasManyGetAssociationsMixin, Sequelize} from "sequelize";
 
-export interface ISearchTracingAttributes {
-    id: string;
-    neuronId: string;
-    tracingStructureId: string;
-    somaId: string;
-    nodeCount: number;
-    pathCount: number;
-    branchCount: number;
-    endCount: number;
-    transformedAt: Date;
-    createdAt: Date;
-    updatedAt: Date;
+import {BaseModel} from "../transform/baseModel";
+import {SearchTracingNode} from "./tracingNode";
+import {SearchTracingStructure} from "./tracingStructure";
+import {SearchNeuron} from "./neuron";
+import {SearchContent} from "./searchContent";
+
+export type SearchTracingAttributes = {
+    nodeCount?: number;
+    pathCount?: number;
+    branchCount?: number;
+    endCount?: number;
+    transformedAt?: Date;
+    somaId?: string;
+    neuronId?: string;
+    tracingStructureId?: string;
+    updatedAt?: Date;
 }
 
+export class SearchTracing extends BaseModel {
+    public nodeCount: number;
+    public pathCount: number;
+    public branchCount: number;
+    public endCount: number;
+    public transformedAt: Date;
+    public readonly createdAt: Date;
+    public readonly updatedAt: Date;
 
-export interface ISearchTracing extends Instance<ISearchTracingAttributes>, ISearchTracingAttributes {
-    soma: ISearchTracingNode;
+    public neuronId?: string;
+    public tracingStructureId?: string;
+
+    public getNodes!: HasManyGetAssociationsMixin<SearchTracingNode>;
+    public getSearchContent!: HasManyGetAssociationsMixin<SearchContent>;
+    public getSoma!: BelongsToGetAssociationMixin<SearchTracingNode>;
+    public getNeuron!: BelongsToGetAssociationMixin<SearchNeuron>;
+    public getTracingStructure!: BelongsToGetAssociationMixin<SearchTracingStructure>;
+
+    public nodes?: SearchTracingNode[];
+    public soma?: SearchTracingNode;
+    public tracingStructure?: SearchTracingStructure;
 }
 
-export interface ISearchTracingTable extends Model<ISearchTracing, ISearchTracingAttributes> {
-}
-
-export const TableName = "Tracing";
-
-export function sequelizeImport(sequelize, DataTypes) {
-    let Tracing = sequelize.define(TableName, {
+export const modelInit = (sequelize: Sequelize) => {
+    SearchTracing.init({
         id: {
             primaryKey: true,
             type: DataTypes.UUID,
@@ -38,17 +54,16 @@ export function sequelizeImport(sequelize, DataTypes) {
         endCount: DataTypes.INTEGER,
         transformedAt: DataTypes.DATE
     }, {
+        tableName: "Tracing",
         timestamps: true,
-        freezeTableName: true
+        sequelize
     });
+};
 
-    Tracing.associate = models => {
-        Tracing.hasMany(models.TracingNode, {foreignKey: "tracingId", as: "nodes"});
-        Tracing.hasMany(models.SearchContent, {foreignKey: "tracingId"});
-        Tracing.belongsTo(models.Neuron, {foreignKey: "neuronId", as: "neuron"});
-        Tracing.belongsTo(models.TracingStructure, {foreignKey: "tracingStructureId"});
-        Tracing.belongsTo(models.TracingNode, {foreignKey: {name: "somaId", allowNull: true}, as: "soma"});
-    };
-
-    return Tracing;
-}
+export const modelAssociate = () => {
+    SearchTracing.hasMany(SearchTracingNode, {foreignKey: "tracingId", as: "nodes"});
+    SearchTracing.hasMany(SearchContent, {foreignKey: "tracingId"});
+    SearchTracing.belongsTo(SearchNeuron, {foreignKey: "neuronId"});
+    SearchTracing.belongsTo(SearchTracingStructure, {foreignKey: "tracingStructureId", as: "tracingStructure"});
+    SearchTracing.belongsTo(SearchTracingNode, {foreignKey: "somaId", as: "soma"});
+};

@@ -1,26 +1,18 @@
-import {DataTypes, Instance, Model, Models} from "sequelize";
+import {Sequelize, DataTypes, HasManyGetAssociationsMixin} from "sequelize";
 
-import {ISearchSampleAttributes} from "./sample";
+import {BaseModel} from "../transform/baseModel";
+import {SearchSample} from "./sample";
 
-export interface ISearchMouseStrainAttributes {
-    id?: string;
-    name?: string;
-    createdAt?: Date;
-    updatedAt?: Date;
+export class SearchMouseStrain extends BaseModel {
+    public name: string;
+    public readonly createdAt: Date;
+    public readonly updatedAt: Date;
+
+    public getSamples!: HasManyGetAssociationsMixin<SearchSample>;
 }
 
-export interface ISearchMouseStrain extends Instance<ISearchMouseStrainAttributes>, ISearchMouseStrainAttributes {
-    getSamples(): ISearchSampleAttributes[];
-}
-
-export interface ISearchMouseStrainTable extends Model<ISearchMouseStrain, ISearchMouseStrainAttributes> {
-}
-
-export const TableName = "MouseStrain";
-
-// noinspection JSUnusedGlobalSymbols
-export function sequelizeImport(sequelize, DataTypes: DataTypes): ISearchMouseStrainTable {
-    const MouseStrain: ISearchMouseStrainTable = sequelize.define(TableName, {
+export const modelInit = (sequelize: Sequelize) => {
+    SearchMouseStrain.init({
         id: {
             primaryKey: true,
             type: DataTypes.UUID,
@@ -28,13 +20,12 @@ export function sequelizeImport(sequelize, DataTypes: DataTypes): ISearchMouseSt
         },
         name: DataTypes.TEXT
     }, {
+        tableName: "MouseStrain",
         timestamps: true,
-        freezeTableName: true
+        sequelize
     });
+};
 
-    MouseStrain.associate = (models: Models) => {
-        MouseStrain.hasMany(models.Sample, {foreignKey: "mouseStrainId", as: "samples"});
-    };
-
-    return MouseStrain;
-}
+export const modelAssociate = () => {
+    SearchMouseStrain.hasMany(SearchSample, {foreignKey: "mouseStrainId"});
+};

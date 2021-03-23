@@ -1,30 +1,20 @@
-import {Instance, Model} from "sequelize";
+import {Sequelize, DataTypes, HasManyGetAssociationsMixin} from "sequelize";
 
-export enum SearchTracingStructureId {
-    axon = 1,       // Must match value used in API
-    dendrite = 2,   // Must match value used in API
-    soma = 3,       // UI-only for selected what to display for a neuron
-    all = 4,        // Same as above
-    any = -1        // No selection - used for "axonal end point" combinations in query not part of neuron display
+import {BaseModel} from "../transform/baseModel";
+import {SearchTracing} from "./tracing";
+
+export class SearchTracingStructure extends BaseModel {
+    public id: string;
+    public name: string;
+    public value: number;
+    public readonly createdAt: Date;
+    public readonly updatedAt: Date;
+
+    public getTracings!: HasManyGetAssociationsMixin<SearchTracing>;
 }
 
-export interface ISearchTracingStructureAttributes {
-    id: string;
-    name: string;
-    value: SearchTracingStructureId;
-
-}
-
-export interface ISearchTracingStructure extends Instance<ISearchTracingStructureAttributes>, ISearchTracingStructureAttributes {
-}
-
-export interface ISearchTracingStructureTable extends Model<ISearchTracingStructure, ISearchTracingStructureAttributes> {
-}
-
-export const TableName = "TracingStructure";
-
-export function sequelizeImport(sequelize, DataTypes) {
-    const TracingStructure = sequelize.define(TableName, {
+export const modelInit = (sequelize: Sequelize) => {
+    SearchTracingStructure.init( {
         id: {
             primaryKey: true,
             type: DataTypes.UUID,
@@ -33,13 +23,12 @@ export function sequelizeImport(sequelize, DataTypes) {
         name: DataTypes.TEXT,
         value: DataTypes.INTEGER
     }, {
-        timestamps: false,
-        freezeTableName: true
+        tableName: "TracingStructure",
+        timestamps: true,
+        sequelize
     });
+};
 
-    TracingStructure.associate = models => {
-        TracingStructure.hasMany(models.Tracing, {foreignKey: "tracingStructureId", as: "tracings"});
-    };
-
-    return TracingStructure;
-}
+export const modelAssociate = () => {
+    SearchTracingStructure.hasMany(SearchTracing, {foreignKey: "tracingStructureId"});
+};

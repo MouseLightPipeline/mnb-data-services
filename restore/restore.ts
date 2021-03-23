@@ -62,7 +62,7 @@ async function performRestore(args: string[]) {
     debug(`performing ${exec_str}`);
 
     try {
-        await new Promise((resolve, reject) => exec(exec_str, (error, stderr, stdout) => {
+        await new Promise<void>((resolve, reject) => exec(exec_str, (error, stderr, stdout) => {
             if (error) {
                 debug(error.message);
                 reject();
@@ -81,7 +81,7 @@ async function performSqlCommand(options, command: string) {
     const drop_str = `psql -h ${options.host} -p ${options.port} -U ${options.username} -d ${options.database} -c "${command}"`;
 
     try {
-        await new Promise((resolve, reject) => exec(drop_str, (error, stdout) => {
+        await new Promise<void>((resolve, reject) => exec(drop_str, (error, stdout) => {
             if (error) {
                 debug(error.message);
                 reject();

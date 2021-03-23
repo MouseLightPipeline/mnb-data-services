@@ -1,3 +1,5 @@
+import {Dialect} from "sequelize";
+
 export const Databases = {
     sample: {
         database: "samples_production",
@@ -5,15 +7,8 @@ export const Databases = {
         password: null,
         host: "sample-db",
         port: 5432,
-        dialect: "postgres",
-        logging: null,
-        pool: {
-            max: 50,
-            min: 0,
-            acquire: 20000,
-            idle: 10000
-        },
-        operatorsAliases: false
+        dialect: "postgres" as Dialect,
+        logging: null
     },
     swc: {
         database: "swc_production",
@@ -21,15 +16,8 @@ export const Databases = {
         password: null,
         host: "swc-db",
         port: 5432,
-        dialect: "postgres",
-        logging: null,
-        pool: {
-            max: 50,
-            min: 0,
-            acquire: 20000,
-            idle: 10000
-        },
-        operatorsAliases: false
+        dialect: "postgres" as Dialect,
+        logging: null
     },
     transform: {
         database: "transform_production",
@@ -37,15 +25,8 @@ export const Databases = {
         password: null,
         host: "transform-db",
         port: 5432,
-        dialect: "postgres",
-        logging: null,
-        pool: {
-            max: 50,
-            min: 0,
-            acquire: 20000,
-            idle: 10000
-        },
-        operatorsAliases: false
+        dialect: "postgres" as Dialect,
+        logging: null
     },
     search: {
         database: "search_production",
@@ -53,15 +34,8 @@ export const Databases = {
         password: null,
         host: "search-db",
         port: 5432,
-        dialect: "postgres",
-        logging: null,
-        pool: {
-            max: 50,
-            min: 0,
-            acquire: 20000,
-            idle: 10000
-        },
-        operatorsAliases: false
+        dialect: "postgres" as Dialect,
+        logging: null
     }
 };
 

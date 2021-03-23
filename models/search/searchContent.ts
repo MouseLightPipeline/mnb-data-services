@@ -1,44 +1,58 @@
-import {Instance, Model} from "sequelize";
-import {SearchScope} from "./neuron";
-import {ConsensusStatus} from "../sample/neuron";
+import {Sequelize, DataTypes} from "sequelize";
 
-export interface ISearchContentAttributes {
-    id: string;
-    searchScope: SearchScope;
-    neuronId: string;
-    tracingId: string;
-    tracingStructureId: string;
-    brainAreaId: string;
-    neuronIdString: string;
-    neuronDOI: string;
-    neuronConsensus: ConsensusStatus;
-    somaX: number;
-    somaY: number;
-    somaZ: number;
-    nodeCount: number;
-    somaCount: number;
-    pathCount: number;
-    branchCount: number;
-    endCount: number;
+import {ConsensusStatus, SearchNeuron, SearchScope} from "./neuron";
+import {BaseModel} from "../transform/baseModel";
+import {SearchTracingStructure} from "./tracingStructure";
+import {SearchTracing} from "./tracing";
+import {SearchBrainArea} from "./brainArea";
+
+export type SearchContentAttributes = {
+    id?: string;
+    brainAreaId?: string;
+    neuronId?: string;
+    tracingStructureId?: string;
+    searchScope?: SearchScope;
+    neuronIdString?: string;
+    neuronDOI?: string;
+    neuronConsensus?: ConsensusStatus;
+    somaX?: number;
+    somaY?: number;
+    somaZ?: number;
+    nodeCount?: number;
+    somaCount?: number;
+    pathCount?: number;
+    branchCount?: number;
+    endCount?: number;
+    tracingId?: string;
 }
 
-export interface ISearchContent extends Instance<ISearchContentAttributes>, ISearchContentAttributes {
+export class SearchContent extends BaseModel {
+    public neuronId: string;
+    public searchScope: SearchScope;
+    public neuronIdString: string;
+    public neuronDOI: string;
+    public neuronConsensus: ConsensusStatus;
+    public somaX: number;
+    public somaY: number;
+    public somaZ: number;
+    public nodeCount: number;
+    public somaCount: number;
+    public pathCount: number;
+    public branchCount: number;
+    public endCount: number;
+
+    public tracingId?: string;
 }
 
-export interface ISearchContentTable extends Model<ISearchContent, ISearchContentAttributes> {
-}
-
-export const TableName = "SearchContent";
-
-export function sequelizeImport(sequelize, DataTypes) {
-    let SearchContent = sequelize.define(TableName, {
+export const modelInit = (sequelize: Sequelize) => {
+    SearchContent.init({
         id: {
             primaryKey: true,
             type: DataTypes.UUID
         },
-        searchScope: DataTypes.INTEGER,
         neuronIdString: DataTypes.TEXT,
         neuronDOI: DataTypes.TEXT,
+        searchScope: DataTypes.INTEGER,
         neuronConsensus: DataTypes.INTEGER,
         somaX: DataTypes.DOUBLE,
         somaY: DataTypes.DOUBLE,
@@ -49,16 +63,15 @@ export function sequelizeImport(sequelize, DataTypes) {
         branchCount: DataTypes.INTEGER,
         endCount: DataTypes.INTEGER
     }, {
+        tableName: "SearchContent",
         timestamps: false,
-        freezeTableName: true
+        sequelize
     });
+};
 
-    SearchContent.associate = models => {
-        SearchContent.belongsTo(models.Tracing, {foreignKey: "tracingId"});
-        SearchContent.belongsTo(models.BrainArea, {foreignKey: "brainAreaId"});
-        SearchContent.belongsTo(models.Neuron, {foreignKey: "neuronId"});
-        SearchContent.belongsTo(models.TracingStructure, {foreignKey: "tracingStructureId"});
-    };
-
-    return SearchContent;
-}
+export const modelAssociate = () => {
+    SearchContent.belongsTo(SearchTracing, {foreignKey: "tracingId"});
+    SearchContent.belongsTo(SearchBrainArea, {foreignKey: "brainAreaId"});
+    SearchContent.belongsTo(SearchNeuron, {foreignKey: "neuronId"});
+    SearchContent.belongsTo(SearchTracingStructure, {foreignKey: "tracingStructureId"});
+};

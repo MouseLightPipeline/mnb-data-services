@@ -1,31 +1,38 @@
-import {DataTypes, Instance, Model, Models} from "sequelize";
+import {
+    BelongsToGetAssociationMixin,
+    DataTypes, FindOptions,
+    HasManyGetAssociationsMixin,
+    Sequelize
+} from "sequelize";
 
-import {ISearchMouseStrainAttributes, ISearchMouseStrainTable} from "./mouseStrain";
+import {BaseModel} from "../transform/baseModel";
+import {SearchMouseStrain} from "./mouseStrain";
 
-export interface ISearchSampleAttributes {
-    id?: string,
+export type SearchSampleAttributes = {
     idNumber?: number;
     animalId?: string;
     tag?: string;
     comment?: string;
-    mouseStrainId?: string;
+    sampleDate?: Date;
     searchScope?: number;
-    createdAt?: Date;
     updatedAt?: Date;
 }
 
-export interface ISearchSample extends Instance<ISearchSampleAttributes>, ISearchSampleAttributes {
-    getMouseStrain(): ISearchMouseStrainAttributes;
+export class SearchSample extends BaseModel {
+    public idNumber: number;
+    public animalId: string;
+    public tag: string;
+    public comment: string;
+    public sampleDate: Date;
+    public searchScope?: number;
+    public readonly createdAt: Date;
+    public readonly updatedAt: Date;
+
+    public getMouseStrain!: BelongsToGetAssociationMixin<SearchMouseStrain>;
 }
 
-export interface ISearchSampleTable extends Model<ISearchSample, ISearchSampleAttributes> {
-}
-
-export const TableName = "Sample";
-
-// noinspection JSUnusedGlobalSymbols
-export function sequelizeImport(sequelize, DataTypes: DataTypes): ISearchSampleTable {
-    const Sample: ISearchSampleTable = sequelize.define(TableName, {
+export const modelInit = (sequelize: Sequelize) => {
+    SearchSample.init({
         id: {
             primaryKey: true,
             type: DataTypes.UUID,
@@ -46,13 +53,12 @@ export function sequelizeImport(sequelize, DataTypes: DataTypes): ISearchSampleT
         },
         searchScope: DataTypes.INTEGER
     }, {
+        tableName: "Sample",
         timestamps: true,
-        freezeTableName: true
+        sequelize
     });
+};
 
-    Sample.associate = (models: Models) => {
-        Sample.belongsTo(models.MouseStrain, {foreignKey: "mouseStrainId", as: "mouseStrain"});
-    };
-
-    return Sample;
-}
+export const modelAssociate = () => {
+    SearchSample.belongsTo(SearchMouseStrain, {foreignKey: "mouseStrainId"});
+};

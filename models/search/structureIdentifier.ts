@@ -1,6 +1,9 @@
-import {Instance, Model} from "sequelize";
+import { Sequelize, DataTypes, HasManyGetAssociationsMixin} from "sequelize";
 
-export enum SearchStructureIdentifierId {
+import {BaseModel} from "../transform/baseModel";
+import {SearchTracingNode} from "./tracingNode";
+
+export enum SearchStructureIdentifiers {
     undefined = 0,
     soma = 1,
     axon = 2,
@@ -10,38 +13,91 @@ export enum SearchStructureIdentifierId {
     endPoint = 6
 }
 
-export interface ISearchStructureIdentifierAttributes {
-    id: string;
-    name: string;
-    value: SearchStructureIdentifierId;
+export class SearchStructureIdentifier extends BaseModel {
+    public name: string;
+    public value: SearchStructureIdentifiers;
+    public readonly createdAt: Date;
+    public readonly updatedAt: Date;
+
+    public getNodes!: HasManyGetAssociationsMixin<SearchTracingNode>;
+
+    public static valueIdMap = new Map<number, string>();
+    public static idValueMap = new Map<string, number>();
+
+    public static async buildIdValueMap()  {
+        if (this.valueIdMap.size === 0) {
+            const all = await SearchStructureIdentifier.findAll({});
+            all.forEach(s => {
+                this.valueIdMap.set(s.value, s.id);
+                this.idValueMap.set(s.id, s.value);
+            });
+        }
+    }
+
+    public static idForValue(val: number) {
+        return this.valueIdMap.get(val);
+    }
+
+    public static valueForId(id: string) {
+        return this.idValueMap.get(id);
+    }
+
+    public static structuresAreLoaded () {
+        return this.valueIdMap.size > 0;
+    }
+
+    public static countColumnName(s: number | string | SearchStructureIdentifier): string {
+        if (s === null || s === undefined) {
+            return null;
+        }
+
+        let value: number = null;
+
+        if (typeof s === "number") {
+            value = s;
+        } else if (typeof s === "string") {
+            value = this.idValueMap.get(s);
+        } else {
+            value = s.value;
+        }
+
+        if (value === null || value === undefined) {
+            return null;
+        }
+
+        switch (value) {
+            case SearchStructureIdentifiers.soma:
+                return "somaCount";
+            case SearchStructureIdentifiers.undefined:
+                return "pathCount";
+            case SearchStructureIdentifiers.forkPoint:
+                return "branchCount";
+            case SearchStructureIdentifiers.endPoint:
+                return "endCount";
+        }
+
+        return null;
+    };
 }
 
-export interface ISearchStructureIdentifier extends Instance<ISearchStructureIdentifierAttributes>, ISearchStructureIdentifierAttributes {
-}
-
-export interface ISearchStructureIdentifierTable extends Model<ISearchStructureIdentifier, ISearchStructureIdentifierAttributes> {
-    countColumnName(s: number | string | ISearchStructureIdentifierAttributes): string | null;
-}
-
-export const TableName = "StructureIdentifier";
-
-export function sequelizeImport(sequelize, DataTypes) {
-    const StructureIdentifier = sequelize.define(TableName, {
+export const modelInit = (sequelize: Sequelize) => {
+    SearchStructureIdentifier.init({
         id: {
             primaryKey: true,
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4
         },
         name: DataTypes.TEXT,
-        value: DataTypes.INTEGER
+        value: DataTypes.INTEGER,
     }, {
-        timestamps: false,
-        freezeTableName: true
+        tableName: "StructureIdentifier",
+        timestamps: true,
+        sequelize
     });
+};
 
-    StructureIdentifier.associate = models => {
-        // StructureIdentifier.hasMany(models.SwcTracingNode, {foreignKey: "structureIdentifierId", as: "Nodes"});
-    };
+export const modelAssociate = () => {
+    SearchStructureIdentifier.hasMany(SearchTracingNode, {foreignKey: "structureIdentifierId", as: "nodes"});
 
-    return StructureIdentifier;
-}
+    SearchStructureIdentifier.buildIdValueMap().then();
+};
