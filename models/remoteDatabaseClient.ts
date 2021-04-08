@@ -2,7 +2,7 @@ import * as path from "path";
 import * as fs from "fs";
 import {Sequelize, Options} from "sequelize";
 
-const debug = require("debug")("mnb:swc-api:database-connector");
+const debug = require("debug")("mnb:data-services:remoteDatabaseClient");
 
 export class RemoteDatabaseClient {
     public static async Start(name: string, options: Options): Promise<RemoteDatabaseClient> {
