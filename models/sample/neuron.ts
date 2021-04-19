@@ -6,7 +6,7 @@ import {
     FindOptions, Transaction
 } from "sequelize";
 
-import {BaseModel, DeleteOutput, EntityMutateOutput, EntityQueryInput, EntityQueryOutput} from "./baseModel";
+import {BaseModel, DeleteOutput, EntityMutateOutput, EntityQueryInput, EntityQueryOutput} from "../baseModel";
 import {
     optionsWhereCompartmentIds,
     optionsWhereIds,
@@ -311,6 +311,6 @@ export const modelInit = (sequelize: Sequelize) => {
 };
 
 export const modelAssociate = () => {
-    Neuron.belongsTo(Injection, {foreignKey: "injectionId"});
+    Neuron.belongsTo(Injection, {foreignKey: "injectionId", as: "injection"});
     Neuron.belongsTo(BrainArea, {foreignKey: {name: "brainAreaId", allowNull: true}});
 };

@@ -1,6 +1,6 @@
 import {Sequelize, DataTypes, BelongsToGetAssociationMixin, HasManyGetAssociationsMixin} from "sequelize";
 
-import {BaseModel} from "../transform/baseModel";
+import {BaseModel} from "../baseModel";
 import {TracingStructure} from "./tracingStructure";
 import {SwcNode} from "./swcNode";
 

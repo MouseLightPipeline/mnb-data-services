@@ -1,23 +1,9 @@
 import {BelongsToGetAssociationMixin, DataTypes, Sequelize} from "sequelize";
 
-import {BaseModel} from "../transform/baseModel";
+import {BaseModel} from "../baseModel";
 import {SearchTracing} from "./tracing";
 import {SearchStructureIdentifier} from "./structureIdentifier";
 import {SearchBrainArea} from "./brainArea";
-
-export interface IPageInput {
-    tracingId: string;
-    offset: number;
-    limit: number;
-}
-
-export interface INodePage {
-    offset: number;
-    limit: number;
-    totalCount: number;
-    hasNextPage: boolean;
-    nodes: SearchTracingNode[];
-}
 
 export type SearchTracingNodeAttributes = {
     sampleNumber?: number;
@@ -40,7 +26,8 @@ export class SearchTracingNode extends BaseModel {
     public radius: number;
     public lengthToParent: number;
     public structureIdentifierId: string;
-    public brainAreaId: string;
+    public brainAreaIdCcfV25: string;
+    public brainAreaIdCcfV30: string;
 
     public getTracing!: BelongsToGetAssociationMixin<SearchTracing>;
 }
@@ -64,7 +51,8 @@ export const modelInit = (sequelize: Sequelize) => {
         z: DataTypes.DOUBLE,
         // Outside refs
         swcNodeId: DataTypes.UUID,
-        brainAreaId: DataTypes.UUID
+        brainAreaIdCcfV25: DataTypes.UUID,
+        brainAreaIdCcfV30: DataTypes.UUID
     }, {
         tableName: "TracingNode",
         timestamps: false,
@@ -75,5 +63,6 @@ export const modelInit = (sequelize: Sequelize) => {
 export const modelAssociate = () => {
     SearchTracingNode.belongsTo(SearchTracing, {foreignKey: "tracingId"});
     SearchTracingNode.belongsTo(SearchStructureIdentifier, {foreignKey: "structureIdentifierId"});
-    SearchTracingNode.belongsTo(SearchBrainArea, {foreignKey: "brainAreaId"});
+    SearchTracingNode.belongsTo(SearchBrainArea, {foreignKey: "brainAreaIdCcfV25", as: "brainAreaCcfV25"});
+    SearchTracingNode.belongsTo(SearchBrainArea, {foreignKey: "brainAreaIdCcfV30", as: "brainAreaCcfV30"});
 };

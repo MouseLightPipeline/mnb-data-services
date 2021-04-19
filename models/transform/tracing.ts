@@ -1,10 +1,10 @@
 import {DataTypes, HasManyGetAssociationsMixin, Sequelize} from "sequelize";
 
-import {BaseModel} from "./baseModel";
+import {BaseModel} from "../baseModel";
 import {TracingNode} from "./tracingNode";
 import {SwcTracing} from "../swc/swcTracing";
-import {CcfV25BrainCompartment} from "./ccfv25BrainCompartmentContents";
-import {CcfV30BrainCompartment} from "./ccfV30BrainCompartmentContents";
+import {CcfV25CompartmentSearchContent} from "./ccfv25CompartmentSearchContent";
+import {CcfV30CompartmentSearchContent} from "./ccfV30CompartmentSearchContent";
 
 export enum ExportFormat {
     SWC = 0,
@@ -21,8 +21,8 @@ export class Tracing extends BaseModel {
     public transformedAt?: Date;
 
     public getNodes!: HasManyGetAssociationsMixin<TracingNode>;
-    public getV25Compartments!: HasManyGetAssociationsMixin<CcfV25BrainCompartment>;
-    public getV30Compartments!: HasManyGetAssociationsMixin<CcfV30BrainCompartment>;
+    public getV25Compartments!: HasManyGetAssociationsMixin<CcfV25CompartmentSearchContent>;
+    public getV30Compartments!: HasManyGetAssociationsMixin<CcfV30CompartmentSearchContent>;
 
     public nodes?: TracingNode[];
 
@@ -63,6 +63,6 @@ export const modelInit = (sequelize: Sequelize) => {
 
 export const modelAssociate = () => {
     Tracing.hasMany(TracingNode, {foreignKey: "tracingId", as: "nodes"});
-    Tracing.hasMany(CcfV25BrainCompartment, {foreignKey: "tracingId", as: "v25Compartments"});
-    Tracing.hasMany(CcfV30BrainCompartment, {foreignKey: "tracingId", as: "v30Compartments"});
+    Tracing.hasMany(CcfV25CompartmentSearchContent, {foreignKey: "tracingId", as: "v25Compartments"});
+    Tracing.hasMany(CcfV30CompartmentSearchContent, {foreignKey: "tracingId", as: "v30Compartments"});
 };

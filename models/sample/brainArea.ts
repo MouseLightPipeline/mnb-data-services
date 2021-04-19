@@ -1,6 +1,6 @@
 import {Sequelize, DataTypes, HasManyGetAssociationsMixin, FindOptions, Op} from "sequelize";
 
-import {BaseModel, EntityMutateOutput, EntityQueryInput} from "./baseModel";
+import {BaseModel, EntityMutateOutput, EntityQueryInput} from "../baseModel";
 import {Injection} from "./injection";
 import {Neuron} from "./neuron";
 import {

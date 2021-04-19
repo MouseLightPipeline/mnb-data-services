@@ -3,7 +3,7 @@ import {FindOptions, Op} from "sequelize";
 import {Injection} from "./injection";
 import {Neuron} from "./neuron";
 import {Sample} from "./sample"
-import {EntityQueryInput} from "./baseModel";
+import {EntityQueryInput} from "../baseModel";
 import {RegistrationTransform} from "./transform";
 
 export type WithCompartmentQueryInput = {

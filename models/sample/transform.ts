@@ -1,6 +1,6 @@
 import {BelongsToGetAssociationMixin, DataTypes, FindOptions, Sequelize} from "sequelize";
 
-import {BaseModel, DeleteOutput, EntityMutateOutput, EntityQueryInput} from "./baseModel";
+import {BaseModel, DeleteOutput, EntityMutateOutput, EntityQueryInput} from "../baseModel";
 import {optionsIncludeSampleIds, optionsWhereIds, WithSamplesQueryInput} from "./findOptions";
 import {Sample} from "./sample";
 

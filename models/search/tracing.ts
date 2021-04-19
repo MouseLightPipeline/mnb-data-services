@@ -1,10 +1,11 @@
 import {BelongsToGetAssociationMixin, DataTypes, HasManyGetAssociationsMixin, Sequelize} from "sequelize";
 
-import {BaseModel} from "../transform/baseModel";
+import {BaseModel} from "../baseModel";
 import {SearchTracingNode} from "./tracingNode";
 import {SearchTracingStructure} from "./tracingStructure";
 import {SearchNeuron} from "./neuron";
-import {SearchContent} from "./searchContent";
+import {CcfV25SearchContent} from "./ccfV25SearchContent";
+import {CcfV30SearchContent} from "./ccfV30SearchContent";
 
 export type SearchTracingAttributes = {
     nodeCount?: number;
@@ -24,14 +25,10 @@ export class SearchTracing extends BaseModel {
     public branchCount: number;
     public endCount: number;
     public transformedAt: Date;
-    public readonly createdAt: Date;
-    public readonly updatedAt: Date;
-
-    public neuronId?: string;
-    public tracingStructureId?: string;
+    public tracingStructureId: string;
+    public neuronId: string;
 
     public getNodes!: HasManyGetAssociationsMixin<SearchTracingNode>;
-    public getSearchContent!: HasManyGetAssociationsMixin<SearchContent>;
     public getSoma!: BelongsToGetAssociationMixin<SearchTracingNode>;
     public getNeuron!: BelongsToGetAssociationMixin<SearchNeuron>;
     public getTracingStructure!: BelongsToGetAssociationMixin<SearchTracingStructure>;
@@ -61,9 +58,10 @@ export const modelInit = (sequelize: Sequelize) => {
 };
 
 export const modelAssociate = () => {
-    SearchTracing.hasMany(SearchTracingNode, {foreignKey: "tracingId", as: "nodes"});
-    SearchTracing.hasMany(SearchContent, {foreignKey: "tracingId"});
-    SearchTracing.belongsTo(SearchNeuron, {foreignKey: "neuronId"});
     SearchTracing.belongsTo(SearchTracingStructure, {foreignKey: "tracingStructureId", as: "tracingStructure"});
+    SearchTracing.hasMany(SearchTracingNode, {foreignKey: "tracingId", as: "nodes"});
     SearchTracing.belongsTo(SearchTracingNode, {foreignKey: "somaId", as: "soma"});
+    SearchTracing.belongsTo(SearchNeuron, {foreignKey: "neuronId"});
+    SearchTracing.hasMany(CcfV25SearchContent, {foreignKey: "tracingId"});
+    SearchTracing.hasMany(CcfV30SearchContent, {foreignKey: "tracingId"});
 };

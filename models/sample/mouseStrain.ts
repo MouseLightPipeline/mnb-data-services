@@ -1,6 +1,6 @@
 import {Sequelize, DataTypes, HasManyGetAssociationsMixin, FindOrCreateOptions, FindOptions} from "sequelize";
 
-import {BaseModel, EntityMutateOutput, EntityQueryInput} from "./baseModel";
+import {BaseModel, EntityMutateOutput, EntityQueryInput} from "../baseModel";
 import {optionsIncludeSampleIds, optionsWhereIds, WithSamplesQueryInput} from "./findOptions";
 import {Sample} from "./sample";
 
@@ -125,5 +125,5 @@ export const modelInit = (sequelize: Sequelize) => {
 };
 
 export const modelAssociate = () => {
-    MouseStrain.hasMany(Sample, {foreignKey: "mouseStrainId"});
+    MouseStrain.hasMany(Sample, {foreignKey: "mouseStrainId", as: "sample"});
 };
