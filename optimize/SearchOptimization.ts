@@ -657,7 +657,6 @@ export class SearchOptimization {
 
         bar.start(input.length, 0);
 
-
         while (objs.length > 0) {
             const batch = objs.splice(0, SEARCH_CONTENT_INSERT_INCREMENT);
 
