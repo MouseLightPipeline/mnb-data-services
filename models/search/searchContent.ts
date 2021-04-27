@@ -1,32 +1,32 @@
-import {Sequelize, DataTypes} from "sequelize";
+import {DataTypes, BelongsToGetAssociationMixin, WhereOptions} from "sequelize";
 
 import {ConsensusStatus, SearchNeuron, SearchScope} from "./neuron";
-import {BaseModel} from "../transform/baseModel";
+import {BaseModel} from "../baseModel";
 import {SearchTracingStructure} from "./tracingStructure";
 import {SearchTracing} from "./tracing";
 import {SearchBrainArea} from "./brainArea";
 
 export type SearchContentAttributes = {
-    id?: string;
-    brainAreaId?: string;
-    neuronId?: string;
-    tracingStructureId?: string;
-    searchScope?: SearchScope;
-    neuronIdString?: string;
-    neuronDOI?: string;
-    neuronConsensus?: ConsensusStatus;
-    somaX?: number;
-    somaY?: number;
-    somaZ?: number;
-    nodeCount?: number;
-    somaCount?: number;
-    pathCount?: number;
-    branchCount?: number;
-    endCount?: number;
-    tracingId?: string;
+    id: string;
+    neuronId: string;
+    searchScope: SearchScope;
+    neuronIdString: string;
+    neuronDOI: string;
+    neuronConsensus: ConsensusStatus;
+    somaX: number;
+    somaY: number;
+    somaZ: number;
+    nodeCount: number;
+    somaCount: number;
+    pathCount: number;
+    branchCount: number;
+    endCount: number;
+    tracingId: string;
+    brainAreaId: string;
+    tracingStructureId: string;
 }
 
-export class SearchContent extends BaseModel {
+export class SearchContentBase extends BaseModel implements SearchContentAttributes {
     public neuronId: string;
     public searchScope: SearchScope;
     public neuronIdString: string;
@@ -40,38 +40,72 @@ export class SearchContent extends BaseModel {
     public pathCount: number;
     public branchCount: number;
     public endCount: number;
+    public tracingId: string;
+    public brainAreaId: string;
+    public tracingStructureId: string;
 
-    public tracingId?: string;
+    public brainArea?: SearchBrainArea;
+    public neuron?: SearchNeuron;
+    public tracing?: SearchTracing;
+    public tracingStructure?: SearchTracingStructure;
+
+    public getBrainArea!: BelongsToGetAssociationMixin<SearchBrainArea>;
+    public getNeuron!: BelongsToGetAssociationMixin<SearchNeuron>;
+    public getTracing!: BelongsToGetAssociationMixin<SearchTracing>;
+    public getTracingStructure!: BelongsToGetAssociationMixin<SearchTracingStructure>;
 }
 
-export const modelInit = (sequelize: Sequelize) => {
-    SearchContent.init({
-        id: {
-            primaryKey: true,
-            type: DataTypes.UUID
-        },
-        neuronIdString: DataTypes.TEXT,
-        neuronDOI: DataTypes.TEXT,
-        searchScope: DataTypes.INTEGER,
-        neuronConsensus: DataTypes.INTEGER,
-        somaX: DataTypes.DOUBLE,
-        somaY: DataTypes.DOUBLE,
-        somaZ: DataTypes.DOUBLE,
-        nodeCount: DataTypes.INTEGER,
-        somaCount: DataTypes.INTEGER,
-        pathCount: DataTypes.INTEGER,
-        branchCount: DataTypes.INTEGER,
-        endCount: DataTypes.INTEGER
-    }, {
-        tableName: "SearchContent",
-        timestamps: false,
-        sequelize
-    });
-};
+export interface ICompartmentContentForTracingIdsWithSoma {
+    (tracingIds: string[]): Promise<SearchContentBase[]>;
+}
 
-export const modelAssociate = () => {
-    SearchContent.belongsTo(SearchTracing, {foreignKey: "tracingId"});
-    SearchContent.belongsTo(SearchBrainArea, {foreignKey: "brainAreaId"});
-    SearchContent.belongsTo(SearchNeuron, {foreignKey: "neuronId"});
-    SearchContent.belongsTo(SearchTracingStructure, {foreignKey: "tracingStructureId"});
+export interface ICompartmentContentForTracingIdWithCompartment {
+    (tracingId: string, compartmentId: string): Promise<SearchContentBase>;
+}
+
+export interface ICompartmentContentDestroyForTracingIds {
+    (tracingIds: string[]): Promise<void>;
+}
+
+export interface ICompartmentContentAddAll {
+    (content: SearchContentAttributes[]): Promise<void>;
+}
+
+export interface ICompartmentContentAddNew {
+    (content: SearchContentAttributes): Promise<void>;
+}
+
+export interface ICompartmentContentRemoveWhere {
+    (where: WhereOptions): Promise<number>;
+}
+
+export interface ISearchContentOptimize {
+    findForTracingIdsWithSoma: ICompartmentContentForTracingIdsWithSoma;
+
+    findForTracingIdWithCompartment: ICompartmentContentForTracingIdWithCompartment;
+
+    destroyForTracingIds: ICompartmentContentDestroyForTracingIds;
+
+    addAll: ICompartmentContentAddAll;
+
+    addNew: ICompartmentContentAddNew;
+}
+
+export const SearchContentModelAttributes = {
+    id: {
+        primaryKey: true,
+        type: DataTypes.UUID
+    },
+    neuronIdString: DataTypes.TEXT,
+    neuronDOI: DataTypes.TEXT,
+    searchScope: DataTypes.INTEGER,
+    neuronConsensus: DataTypes.INTEGER,
+    somaX: DataTypes.DOUBLE,
+    somaY: DataTypes.DOUBLE,
+    somaZ: DataTypes.DOUBLE,
+    nodeCount: DataTypes.INTEGER,
+    somaCount: DataTypes.INTEGER,
+    pathCount: DataTypes.INTEGER,
+    branchCount: DataTypes.INTEGER,
+    endCount: DataTypes.INTEGER
 };

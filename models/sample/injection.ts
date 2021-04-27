@@ -8,7 +8,7 @@ import {
     EntityQueryInput,
     EntityType,
     RawEntityCount
-} from "./baseModel";
+} from "../baseModel";
 import {BrainArea} from "./brainArea";
 import {Sample} from "./sample";
 import {InjectionVirus} from "./injectionVirus";
@@ -291,9 +291,9 @@ export const modelInit = (sequelize: Sequelize) => {
 };
 
 export const modelAssociate = () => {
-    Injection.belongsTo(Sample, {foreignKey: "sampleId"});
-    Injection.belongsTo(BrainArea, {foreignKey: "brainAreaId"});
-    Injection.belongsTo(InjectionVirus, {foreignKey: "injectionVirusId"});
-    Injection.belongsTo(Fluorophore, {foreignKey: "fluorophoreId"});
-    Injection.hasMany(Neuron, {foreignKey: "injectionId"});
+    Injection.belongsTo(Sample, {foreignKey: "sampleId", as: "sample"});
+    Injection.belongsTo(BrainArea, {foreignKey: "brainAreaId", as: "brainArea"});
+    Injection.belongsTo(InjectionVirus, {foreignKey: "injectionVirusId", as: "injectionVirus"});
+    Injection.belongsTo(Fluorophore, {foreignKey: "fluorophoreId", as: "fluorophore"});
+    Injection.hasMany(Neuron, {foreignKey: "injectionId", as: "injection"});
 };

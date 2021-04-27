@@ -1,12 +1,20 @@
-import {DataTypes, Sequelize} from "sequelize";
+import {DataTypes, Op, Sequelize} from "sequelize";
 
+import {CompartmentSearchContent} from "./compartmentSearchContent";
 import {Tracing} from "./tracing";
-import {BrainCompartment} from "./ccfv25BrainCompartmentContents";
 
-export class CcfV30BrainCompartment extends BrainCompartment {}
+export class CcfV30CompartmentSearchContent extends CompartmentSearchContent {
+    public static async findForTracingIds(tracingIds: string[]): Promise<CompartmentSearchContent[]> {
+        return CcfV30CompartmentSearchContent.findAll({
+            where: {
+                tracingId: {[Op.in]: tracingIds}
+            }
+        });
+    }
+}
 
 export const modelInit = (sequelize: Sequelize) => {
-    CcfV30BrainCompartment.init({
+    CcfV30CompartmentSearchContent.init({
         id: {
             primaryKey: true,
             type: DataTypes.UUID
@@ -34,5 +42,5 @@ export const modelInit = (sequelize: Sequelize) => {
 };
 
 export const modelAssociate = () => {
-    CcfV30BrainCompartment.belongsTo(Tracing, {foreignKey: "tracingId"});
+    CcfV30CompartmentSearchContent.belongsTo(Tracing, {foreignKey: "tracingId"});
 };

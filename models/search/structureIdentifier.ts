@@ -1,6 +1,6 @@
 import { Sequelize, DataTypes, HasManyGetAssociationsMixin} from "sequelize";
 
-import {BaseModel} from "../transform/baseModel";
+import {BaseModel} from "../baseModel";
 import {SearchTracingNode} from "./tracingNode";
 
 export enum SearchStructureIdentifiers {
@@ -16,8 +16,6 @@ export enum SearchStructureIdentifiers {
 export class SearchStructureIdentifier extends BaseModel {
     public name: string;
     public value: SearchStructureIdentifiers;
-    public readonly createdAt: Date;
-    public readonly updatedAt: Date;
 
     public getNodes!: HasManyGetAssociationsMixin<SearchTracingNode>;
 

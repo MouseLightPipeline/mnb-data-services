@@ -20,6 +20,7 @@
     "docker-release": "tsc && gulp release"
   },
   "dependencies": {
+    "cli-progress": "^3.9.0",
     "debug": "^3.1.0",
     "fs-extra": "^7.0.0",
     "lodash": "^4.17.4",

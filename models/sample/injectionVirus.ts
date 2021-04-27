@@ -1,6 +1,6 @@
 import {Sequelize, DataTypes, FindOrCreateOptions, HasManyGetAssociationsMixin, FindOptions, Op} from "sequelize";
 
-import {BaseModel, EntityMutateOutput, EntityQueryInput} from "./baseModel";
+import {BaseModel, EntityMutateOutput, EntityQueryInput} from "../baseModel";
 import {optionsIncludeInjectionIds, optionsWhereIds, WithInjectionsQueryInput} from "./findOptions";
 import {Injection} from "./injection";
 import {Fluorophore} from "./fluorophore";
@@ -136,5 +136,5 @@ export const modelInit = (sequelize: Sequelize) => {
 };
 
 export const modelAssociate = () => {
-    InjectionVirus.hasMany(Injection, {foreignKey: "injectionVirusId"});
+    InjectionVirus.hasMany(Injection, {foreignKey: "injectionVirusId", as: "injections"});
 };

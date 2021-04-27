@@ -1,14 +1,11 @@
 import {Sequelize, DataTypes, HasManyGetAssociationsMixin} from "sequelize";
 
-import {BaseModel} from "../transform/baseModel";
+import {BaseModel} from "../baseModel";
 import {SearchTracing} from "./tracing";
 
 export class SearchTracingStructure extends BaseModel {
-    public id: string;
     public name: string;
     public value: number;
-    public readonly createdAt: Date;
-    public readonly updatedAt: Date;
 
     public getTracings!: HasManyGetAssociationsMixin<SearchTracing>;
 }

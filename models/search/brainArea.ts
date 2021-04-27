@@ -1,7 +1,7 @@
 import {Sequelize, DataTypes, HasManyGetAssociationsMixin, Op} from "sequelize";
 
 const debug = require("debug")("mnb:search-api:compartment-model");
-import {BaseModel} from "../transform/baseModel";
+import {BaseModel} from "../baseModel";
 import {SearchNeuron} from "./neuron";
 
 export class SearchBrainArea extends BaseModel {
@@ -20,8 +20,6 @@ export class SearchBrainArea extends BaseModel {
     public geometryFile: string;
     public geometryColor: string;
     public geometryEnable: boolean;
-    public readonly createdAt: Date;
-    public readonly updatedAt: Date;
 
     public aliasList: string[];
 

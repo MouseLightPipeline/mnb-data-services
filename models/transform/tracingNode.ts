@@ -1,6 +1,6 @@
 import {BelongsToGetAssociationMixin, DataTypes, Sequelize} from "sequelize";
 
-import {BaseModel} from "./baseModel";
+import {BaseModel} from "../baseModel";
 import {Tracing} from "./tracing";
 
 export interface IPageInput {

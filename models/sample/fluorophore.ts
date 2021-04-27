@@ -1,6 +1,6 @@
 import {Sequelize, DataTypes, FindOrCreateOptions, HasManyGetAssociationsMixin, FindOptions, Op} from "sequelize";
 
-import {BaseModel, EntityMutateOutput, EntityQueryInput} from "./baseModel";
+import {BaseModel, EntityMutateOutput, EntityQueryInput} from "../baseModel";
 import {optionsIncludeInjectionIds, optionsWhereIds, WithInjectionsQueryInput} from "./findOptions";
 import {Injection} from "./injection";
 

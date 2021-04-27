@@ -5,7 +5,7 @@ import {
     Sequelize
 } from "sequelize";
 
-import {BaseModel} from "../transform/baseModel";
+import {BaseModel} from "../baseModel";
 import {SearchMouseStrain} from "./mouseStrain";
 
 export type SearchSampleAttributes = {
@@ -25,8 +25,6 @@ export class SearchSample extends BaseModel {
     public comment: string;
     public sampleDate: Date;
     public searchScope?: number;
-    public readonly createdAt: Date;
-    public readonly updatedAt: Date;
 
     public getMouseStrain!: BelongsToGetAssociationMixin<SearchMouseStrain>;
 }
@@ -60,5 +58,5 @@ export const modelInit = (sequelize: Sequelize) => {
 };
 
 export const modelAssociate = () => {
-    SearchSample.belongsTo(SearchMouseStrain, {foreignKey: "mouseStrainId"});
+    SearchSample.belongsTo(SearchMouseStrain, {foreignKey: "mouseStrainId", as: "mouseStrain"});
 };

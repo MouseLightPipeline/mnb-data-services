@@ -1,12 +1,10 @@
 import {Sequelize, DataTypes, HasManyGetAssociationsMixin} from "sequelize";
 
-import {BaseModel} from "../transform/baseModel";
+import {BaseModel} from "../baseModel";
 import {SearchSample} from "./sample";
 
 export class SearchMouseStrain extends BaseModel {
     public name: string;
-    public readonly createdAt: Date;
-    public readonly updatedAt: Date;
 
     public getSamples!: HasManyGetAssociationsMixin<SearchSample>;
 }
@@ -27,5 +25,5 @@ export const modelInit = (sequelize: Sequelize) => {
 };
 
 export const modelAssociate = () => {
-    SearchMouseStrain.hasMany(SearchSample, {foreignKey: "mouseStrainId"});
+    SearchMouseStrain.hasMany(SearchSample, {foreignKey: "mouseStrainId", as: "sample"});
 };

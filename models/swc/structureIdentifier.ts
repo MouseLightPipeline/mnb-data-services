@@ -1,6 +1,6 @@
 import { Sequelize, DataTypes, HasManyGetAssociationsMixin} from "sequelize";
 
-import {BaseModel} from "../transform/baseModel";
+import {BaseModel} from "../baseModel";
 import {SwcNode} from "./swcNode";
 
 export enum StructureIdentifiers {

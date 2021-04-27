@@ -12,7 +12,7 @@ import {
     EntityQueryInput,
     EntityQueryOutput, EntityType,
     RawEntityCount
-} from "./baseModel";
+} from "../baseModel";
 import {
     optionsIncludeInjectionIds,
     optionsIncludeRegistrationTransformIds,
@@ -305,7 +305,7 @@ export const modelInit = (sequelize: Sequelize) => {
 };
 
 export const modelAssociate = () => {
-    Sample.belongsTo(MouseStrain, {foreignKey: "mouseStrainId"});
+    Sample.belongsTo(MouseStrain, {foreignKey: "mouseStrainId", as: "mouseStrain"});
     Sample.hasMany(RegistrationTransform, {foreignKey: "sampleId", as: "transforms"});
-    Sample.hasMany(Injection, {foreignKey: "sampleId"});
+    Sample.hasMany(Injection, {foreignKey: "sampleId", as: "injections"});
 };
