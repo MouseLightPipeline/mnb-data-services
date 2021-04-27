@@ -66,7 +66,7 @@ function createShellTasks(sourceFile) {
     const imageAsLatest = `${dockerRepoImage}:latest`;
 
     // Docker build/tag
-    const buildCommand = `docker build --tag ${imageWithVersion} .`;
+    const buildCommand = `docker build --platform linux/amd64 --tag ${imageWithVersion} .`;
     const tagMajorCommand = imageWithVersionMajor ? `docker tag ${imageWithVersion} ${imageWithVersionMajor}` : `echo "could not tag with major version"`;
     const tagMajMinCommand = imageWithVersionMajMin ? `docker tag ${imageWithVersion} ${imageWithVersionMajMin}` : `echo "could not tag with major.minor version"`;
     const tagLatestCommand = `docker tag ${imageWithVersion} ${imageAsLatest}`;
