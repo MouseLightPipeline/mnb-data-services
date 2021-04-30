@@ -276,7 +276,7 @@ export class SearchOptimization {
             const neuron = localNeuronMap.get(n.id);
             const sample = this.sampleMap.get(n.injection.sampleId);
 
-            if (!neuron || n.idString === "AA1420" || n.updatedAt > neuron.updatedAt || sample.updatedAt > neuron.updatedAt) {
+            if (!neuron || n.updatedAt > neuron.updatedAt || sample.updatedAt > neuron.updatedAt) {
                 const searchNeuron: SearchNeuronAttributes = Object.assign(n.toJSON() as SearchNeuronAttributes, {
                     searchScope: SearchScope.Team,
                     sampleId: n.injection.sample.id
@@ -476,7 +476,7 @@ export class SearchOptimization {
 
         let skipped = false;
 
-        if (this.forceUpdate || neuron.idString === "AA1420" || !tracing || t.updatedAt > tracing.updatedAt || swcTracing.updatedAt > tracing.updatedAt || (neuron !== null && (neuron.updatedAt > tracing.updatedAt))) {
+        if (this.forceUpdate || !tracing || t.updatedAt > tracing.updatedAt || swcTracing.updatedAt > tracing.updatedAt || (neuron !== null && (neuron.updatedAt > tracing.updatedAt))) {
             const searchTracing: SearchTracingAttributes = Object.assign(t.toJSON());
 
             searchTracing.neuronId = swcTracing.neuronId;
