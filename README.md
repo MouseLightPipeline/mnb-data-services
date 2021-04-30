@@ -89,6 +89,11 @@ Perform the migration
 
 You will see the relative progress as the content is transformed.  It can take several minutes to complete.
 
+The above will only optimize neurons/tracings that have been modified since the last update.  To force a complete update
+of all contents include `forceUpdate`.
+
+`yarn run optimize --forceUpdate=true`
+
 ## Optimized Search (External)
 This is similar to the above process for internal the search database.  The primary difference is the optimized output is stored
 in a different search database that only contains neurons marked for public use.  This allows for a simple database
@@ -106,7 +111,7 @@ In the internal deploy directory, load the configuration
 If the public search database has never been populated or the schema has been changed, it must be migrated.  Start an interactive session with a 
 sample-api container
 
-`docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -e DATABASE_PW=${DATABASE_PW} mouselightdatabrowser/search-api:1.5 /bin/bash`
+`docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -e DATABASE_PW=${DATABASE_PW} mouselightdatabrowser/search-api:1.6 /bin/bash`
 
 In the container shell, point to the public search database instance
 
@@ -135,7 +140,7 @@ In the container shell, point to the public search database instance and enable 
 
 Perform the translation using only neurons with a visibility level of public (4)
 
-`node optimize/optimize.js 4`
+`node optimize/optimize.js --visibility=4`
 
 You will see the relative progress as the content is transformed.  It can take several minutes to complete.
 

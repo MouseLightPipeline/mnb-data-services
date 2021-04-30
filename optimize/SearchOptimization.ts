@@ -154,8 +154,24 @@ export class SearchOptimization {
 
         debug(`found ${input.length} samples`);
 
+        const neurons: Neuron[] = await Neuron.findAll({
+            attributes: ["id", "sharing"],
+            where: {sharing: {[Op.ne]: ShareVisibility.Inherited}},
+            include: [{
+                model: Injection,
+                as: "injection",
+                attributes: ["id"],
+                include: [{
+                    model: Sample,
+                    as: "sample"
+                }]
+            }]
+        });
+
+        const dependentSampleIds = neurons.filter(n => n.sharing >= this.minVisibility).map(n => n.injection.sample.id);
+
         input = input.filter(s => {
-            return s.sharing >= this.minVisibility;
+            return s.sharing >= this.minVisibility || dependentSampleIds.some(id => id == s.id);
         });
 
         debug(`${input.length} input samples meet visibility requirements`);
@@ -232,6 +248,7 @@ export class SearchOptimization {
 
         input = input.filter(n => {
             const visibility = n.sharing === ShareVisibility.Inherited ? n.injection.sample.sharing : n.sharing;
+
             return visibility >= this.minVisibility;
         });
 
@@ -259,7 +276,7 @@ export class SearchOptimization {
             const neuron = localNeuronMap.get(n.id);
             const sample = this.sampleMap.get(n.injection.sampleId);
 
-            if (!neuron || n.updatedAt > neuron.updatedAt || sample.updatedAt > neuron.updatedAt) {
+            if (!neuron || n.idString === "AA1420" || n.updatedAt > neuron.updatedAt || sample.updatedAt > neuron.updatedAt) {
                 const searchNeuron: SearchNeuronAttributes = Object.assign(n.toJSON() as SearchNeuronAttributes, {
                     searchScope: SearchScope.Team,
                     sampleId: n.injection.sample.id
@@ -313,14 +330,14 @@ export class SearchOptimization {
                             }
 
                             if (!found) {
-                                debug(`neuron ${n.idString} requires soma look up but there are none of the somas reference a brain area`);
+                                debug(`neuron ${n.idString} required soma look up but none of the somas reference a brain area`);
                             }
 
                         } else {
-                            debug(`neuron ${n.idString} requires soma look up but has no transformed tracings`);
+                            debug(`neuron ${n.idString} required soma look up but has no transformed tracings`);
                         }
                     } else {
-                        debug(`neuron ${n.idString} requires soma look up but has no swc tracings`);
+                        debug(`neuron ${n.idString} required soma look up but has no swc tracings`);
                     }
 
                     if (searchNeuron.brainAreaId === null) {
@@ -459,7 +476,7 @@ export class SearchOptimization {
 
         let skipped = false;
 
-        if (this.forceUpdate || !tracing || t.updatedAt > tracing.updatedAt || swcTracing.updatedAt > tracing.updatedAt || (neuron !== null && (neuron.updatedAt > tracing.updatedAt))) {
+        if (this.forceUpdate || neuron.idString === "AA1420" || !tracing || t.updatedAt > tracing.updatedAt || swcTracing.updatedAt > tracing.updatedAt || (neuron !== null && (neuron.updatedAt > tracing.updatedAt))) {
             const searchTracing: SearchTracingAttributes = Object.assign(t.toJSON());
 
             searchTracing.neuronId = swcTracing.neuronId;
@@ -547,7 +564,10 @@ export class SearchOptimization {
                 });
 
                 if (soma) {
-                    await soma.update({brainAreaId: this.neuronMap.get(t.neuronId).brainAreaId});
+                    const brainAreaId = this.neuronMap.get(t.neuronId).brainAreaId;
+                    soma.brainAreaIdCcfV25 = brainAreaId;
+                    soma.brainAreaIdCcfV30 = brainAreaId;
+                    await soma.update({brainAreaIdCcfV25: brainAreaId, brainAreaIdCcfV30: brainAreaId}, {fields: ["brainAreaIdCcfV25", "brainAreaIdCcfV30"]});
                     debug(`setting soma for tracing ${t.id}`);
                 } else {
                     debug(`no soma for tracing ${t.id}`);

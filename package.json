@@ -1,6 +1,6 @@
 {
   "name": "mnb-data-services",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "private": true,
   "description": "Management of data volumes.  Backup, export, optimize, and synthesize.",
   "author": "Patrick Edson <pedson@leapscientific.com>",
@@ -29,7 +29,8 @@
     "random-word": "^2.0.0",
     "sequelize": "^5.21.2",
     "stats-lite": "^2.2.0",
-    "uuid": "^3.1.0"
+    "uuid": "^3.1.0",
+    "yargs": "^16.2.0"
   },
   "devDependencies": {
     "@types/debug": "^0.0.30",
@@ -40,6 +41,7 @@
     "@types/moment": "^2.13.0",
     "@types/sequelize": "^4.0.53",
     "@types/uuid": "^3.4.2",
+    "@types/yargs": "^16.0.1",
     "del": "^6.0.0",
     "gulp": "^4.0.2",
     "gulp-shell": "^0.6.5",
