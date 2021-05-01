@@ -1,8 +1,10 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as _ from "lodash";
+import * as yargs from "yargs";
+import {hideBin} from "yargs/helpers";
 
-const debug = require("debug")("mnb:data:search:generate-contents");
+const debug = require("debug")("mnb:data:export");
 
 import {ServiceOptions} from "../options/serviceOptions";
 
@@ -21,6 +23,24 @@ import {StructureIdentifier, StructureIdentifiers} from "../models/swc/structure
 import {RemoteDatabaseClient} from "../models/remoteDatabaseClient";
 import {DatabaseOptions} from "../options/databaseOptions";
 
+export enum CcfVersion {
+    Ccf25,
+    Ccf30
+}
+
+type CcfVersionName = "Ccf25" | "Ccf30";
+const CcfVersionNames: ReadonlyArray<CcfVersionName> = ["Ccf25", "Ccf30"];
+
+const argv = yargs(hideBin(process.argv))
+    .options({
+        outputLocation: {type: "string", default: ServiceOptions.exportPath},
+        ccfVersion: {choices: CcfVersionNames, default: CcfVersion[CcfVersion.Ccf25]}
+    }).argv;
+
+debug(`output to location: ${argv.outputLocation}`);
+debug(`ccf version: ${argv.ccfVersion}`);
+
+generateContents(argv.outputLocation, CcfVersion[argv.ccfVersion]).then();
 const pathStructureMap = new Map<string, number>();
 const brainAreaMap = new Map<string, BrainArea>();
 const neuronTracingMap = new Map<string, Tracing[]>();
@@ -30,14 +50,8 @@ let axonId: string = null;
 let dendriteId: string = null;
 let somaId: string = null;
 
-const args = process.argv.slice(2);
-
-let outputLocation = ServiceOptions.exportPath;
-
-generateContents(outputLocation, args).then();
-
-export async function generateContents(outputLocation: string, args: string[]) {
-    const isCcfv3: boolean = args.length > 0;
+export async function generateContents(outputLocation: string, version: CcfVersion) {
+    const isCcfv3 = version === CcfVersion.Ccf30;
 
     const swcFolder = "swc" + (isCcfv3 ? "30" : "25");
     const jsonFolder = "json" + (isCcfv3 ? "30" : "25");
@@ -77,7 +91,9 @@ export async function generateContents(outputLocation: string, args: string[]) {
 
         const tracings = await Tracing.findAll();
 
-        tracings.map(async (t) => {
+        await tracings.reduce(async (p, t) => {
+            await p;
+
             const swcTracing = await SwcTracing.findOne({where: {id: t.swcTracingId}});
 
             if (!swcTracing) {
@@ -91,17 +107,19 @@ export async function generateContents(outputLocation: string, args: string[]) {
             } else {
                 neuronTracingMap.set(swcTracing.neuronId, [t]);
             }
-        });
+
+            return true;
+        }, Promise.resolve(true));
 
         debug("load neurons");
 
-        const neurons = await Neuron.findAll({});
+        const neurons = await Neuron.findAll({order: ["idString"]});
 
         debug(`process ${neurons.length} neurons`);
 
-        await neurons.reduce(async (p, n, idx) => {
+        await neurons.reduce(async (p, n) => {
             await p;
-            debug(`${idx}:\t${n.id}`);
+            debug(`${n.idString}:\t${n.id}`);
             return processNeuron(n, outputLocation, swcFolder, jsonFolder, isCcfv3);
         }, Promise.resolve());
 
@@ -132,6 +150,7 @@ async function processNeuron(neuron: Neuron, outputLocation: string, swcSubdir: 
     const tracings: Tracing[] = neuronTracingMap.get(neuron.id);
 
     if (!tracings || tracings.length === 0) {
+        debug(`skipping neuron ${neuron.idString} for zero tracings`)
         return;
     }
 
@@ -165,6 +184,8 @@ async function processNeuron(neuron: Neuron, outputLocation: string, swcSubdir: 
     }, Promise.resolve(0));
 
     fs.writeFileSync(path.join(outputLocation, swcSubdir, neuron.idString + ".swc"), swc);
+
+    return;
 
     // --- JSON
 
