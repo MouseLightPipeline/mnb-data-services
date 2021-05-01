@@ -191,7 +191,7 @@ export class SearchOptimization {
         await Promise.all(input.map(async (s) => {
             const sample = localSampleMap.get(s.id);
 
-            if (!sample || s.updatedAt > sample.updatedAt) {
+            if (this.forceUpdate || !sample || s.updatedAt > sample.updatedAt) {
                 const searchSample: SearchSampleAttributes = Object.assign(s.toJSON(), {searchScope: SearchScope.Team});
 
                 switch (s.sharing) {
@@ -276,7 +276,7 @@ export class SearchOptimization {
             const neuron = localNeuronMap.get(n.id);
             const sample = this.sampleMap.get(n.injection.sampleId);
 
-            if (!neuron || n.updatedAt > neuron.updatedAt || sample.updatedAt > neuron.updatedAt) {
+            if (this.forceUpdate || !neuron || n.updatedAt > neuron.updatedAt || sample.updatedAt > neuron.updatedAt) {
                 const searchNeuron: SearchNeuronAttributes = Object.assign(n.toJSON() as SearchNeuronAttributes, {
                     searchScope: SearchScope.Team,
                     sampleId: n.injection.sample.id
