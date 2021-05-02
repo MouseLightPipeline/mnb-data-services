@@ -204,8 +204,6 @@ async function processNeuron(neuron: Neuron, outputLocation: string, swcSubdir: 
 
     fs.writeFileSync(path.join(outputLocation, swcSubdir, neuron.idString + ".swc"), swc);
 
-    return;
-
     // --- JSON
 
     let axon: Tracing = null;
