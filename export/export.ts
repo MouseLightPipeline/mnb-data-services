@@ -3,6 +3,7 @@ import * as path from "path";
 import * as _ from "lodash";
 import * as yargs from "yargs";
 import {hideBin} from "yargs/helpers";
+import * as progress from "cli-progress";
 
 const debug = require("debug")("mnb:data:export");
 
@@ -40,7 +41,7 @@ const argv = yargs(hideBin(process.argv))
 debug(`output to location: ${argv.outputLocation}`);
 debug(`ccf version: ${argv.ccfVersion}`);
 
-generateContents(argv.outputLocation, CcfVersion[argv.ccfVersion]).then();
+
 const pathStructureMap = new Map<string, number>();
 const brainAreaMap = new Map<string, BrainArea>();
 const neuronTracingMap = new Map<string, Tracing[]>();
@@ -49,6 +50,8 @@ const tracingStructureMap = new Map<string, string>();
 let axonId: string = null;
 let dendriteId: string = null;
 let somaId: string = null;
+
+generateContents(argv.outputLocation, CcfVersion[argv.ccfVersion]).then();
 
 export async function generateContents(outputLocation: string, version: CcfVersion) {
     const isCcfv3 = version === CcfVersion.Ccf30;
@@ -91,6 +94,10 @@ export async function generateContents(outputLocation: string, version: CcfVersi
 
         const tracings = await Tracing.findAll();
 
+        let bar = new progress.SingleBar({}, progress.Presets.shades_classic);
+
+        bar.start(tracings.length, 0);
+
         await tracings.reduce(async (p, t) => {
             await p;
 
@@ -108,8 +115,12 @@ export async function generateContents(outputLocation: string, version: CcfVersi
                 neuronTracingMap.set(swcTracing.neuronId, [t]);
             }
 
+            bar.increment();
+
             return true;
         }, Promise.resolve(true));
+
+        bar.stop();
 
         debug("load neurons");
 
@@ -117,11 +128,19 @@ export async function generateContents(outputLocation: string, version: CcfVersi
 
         debug(`process ${neurons.length} neurons`);
 
+        bar = new progress.SingleBar({}, progress.Presets.shades_classic);
+
+        bar.start(neurons.length, 0);
+
         await neurons.reduce(async (p, n) => {
             await p;
-            debug(`${n.idString}:\t${n.id}`);
-            return processNeuron(n, outputLocation, swcFolder, jsonFolder, isCcfv3);
+            // debug(`${n.idString}:\t${n.id}`);
+            await processNeuron(n, outputLocation, swcFolder, jsonFolder, isCcfv3);
+
+            bar.increment();
         }, Promise.resolve());
+
+        bar.stop();
 
         debug(`finished processing`);
 
