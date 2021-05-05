@@ -319,7 +319,7 @@ async function mapToJSON(sample: Sample, mouse: MouseStrain, virus: InjectionVir
             },
             annotationSpace: {
                 version: isCcfv3 ? 3.0 : 2.5,
-                description: isCcfv3 ? "Annotation Space: CCFv3.0 Axes> X: Anterior-Posterior; Y: Inferior-Superior; Z:Left-Right" : "CCFv2.5 (ML legacy) Axes> Z: Anterior-Posterior; Y: Inferior-Superior; X:Left-Right",
+                description: isCcfv3 ? "Annotation Space: CCFv3.0 Axes> X: Anterior-Posterior; Y: Inferior-Superior; Z:Left-Right" : "Annotation Space: CCFv2.5 (ML legacy) Axes> Z: Anterior-Posterior; Y: Inferior-Superior; X:Left-Right",
             },
             soma: somaObj,
             axon: axonNodes.map(n => {
