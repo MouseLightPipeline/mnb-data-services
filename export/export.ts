@@ -4,9 +4,6 @@ import * as _ from "lodash";
 import * as yargs from "yargs";
 import {hideBin} from "yargs/helpers";
 import * as progress from "cli-progress";
-
-const debug = require("debug")("mnb:data:export");
-
 import {ServiceOptions} from "../options/serviceOptions";
 
 import {MouseStrain} from "../models/sample/mouseStrain";
@@ -23,6 +20,9 @@ import {TracingNode} from "../models/transform/tracingNode";
 import {StructureIdentifier, StructureIdentifiers} from "../models/swc/structureIdentifier";
 import {RemoteDatabaseClient} from "../models/remoteDatabaseClient";
 import {DatabaseOptions} from "../options/databaseOptions";
+import {ShareVisibility} from "../optimize/SearchOptimization";
+
+const debug = require("debug")("mnb:data:export");
 
 export enum CcfVersion {
     Ccf25,
@@ -32,15 +32,24 @@ export enum CcfVersion {
 type CcfVersionName = "Ccf25" | "Ccf30";
 const CcfVersionNames: ReadonlyArray<CcfVersionName> = ["Ccf25", "Ccf30"];
 
+export enum Visibility {
+    Internal,
+    Public
+}
+
+type VisibilityName = "Public" | "Internal";
+const VisibilityNames: ReadonlyArray<VisibilityName> = ["Public", "Internal"];
+
 const argv = yargs(hideBin(process.argv))
     .options({
         outputLocation: {type: "string", default: ServiceOptions.exportPath},
-        ccfVersion: {choices: CcfVersionNames, default: CcfVersion[CcfVersion.Ccf25]}
+        ccfVersion: {choices: CcfVersionNames, default: CcfVersion[CcfVersion.Ccf25]},
+        visibility: {choices: VisibilityNames, default: Visibility[Visibility.Public]},
     }).argv;
 
 debug(`output to location: ${argv.outputLocation}`);
 debug(`ccf version: ${argv.ccfVersion}`);
-
+debug(`visibility: ${argv.visibility}`);
 
 const pathStructureMap = new Map<string, number>();
 const brainAreaMap = new Map<string, BrainArea>();
@@ -51,9 +60,9 @@ let axonId: string = null;
 let dendriteId: string = null;
 let somaId: string = null;
 
-generateContents(argv.outputLocation, CcfVersion[argv.ccfVersion]).then();
+generateContents(argv.outputLocation, CcfVersion[argv.ccfVersion], Visibility[argv.visibility]).then();
 
-export async function generateContents(outputLocation: string, version: CcfVersion) {
+export async function generateContents(outputLocation: string, version: CcfVersion, minVisibility: Visibility) {
     const isCcfv3 = version === CcfVersion.Ccf30;
 
     const swcFolder = "swc" + (isCcfv3 ? "30" : "25");
@@ -124,9 +133,29 @@ export async function generateContents(outputLocation: string, version: CcfVersi
 
         debug("load neurons");
 
-        const neurons = await Neuron.findAll({order: ["idString"]});
+        let neurons = await Neuron.findAll({
+            include: [{
+                model: Injection,
+                as: "injection",
+                include: [{
+                    model: Sample,
+                    as: "sample"
+                }]
+            }],
+            order: ["idString"]
+        });
 
-        debug(`process ${neurons.length} neurons`);
+        debug(`found ${neurons.length} input neurons`);
+
+        const shareMinVisibility = minVisibility === Visibility.Public ? ShareVisibility.ShareAllExternal : ShareVisibility.DoNotShare;
+
+        neurons = neurons.filter(n => {
+            const visibility = n.sharing === ShareVisibility.Inherited ? n.injection.sample.sharing : n.sharing;
+
+            return visibility >= shareMinVisibility;
+        });
+
+        debug(`${neurons.length} neurons meet visibility requirements`);
 
         bar = new progress.SingleBar({}, progress.Presets.shades_classic);
 

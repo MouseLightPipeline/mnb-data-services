@@ -59,7 +59,7 @@ function createShellTasks(sourceFile) {
     const imageName = packageFile.dockerImageName || packageFile.name;
 
     const dockerRepoImage = `${repo}/${imageName}`;
-
+    
     const imageWithVersion = `${dockerRepoImage}:${version}`;
     const imageWithVersionMajor = versionMajor ? `${dockerRepoImage}:${versionMajor}` : null;
     const imageWithVersionMajMin = versionMajMin ? `${dockerRepoImage}:${versionMajMin}` : null;
