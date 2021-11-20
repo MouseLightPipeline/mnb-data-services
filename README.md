@@ -85,15 +85,15 @@ would do the same only for those neurons marked for public release (external bro
 
 ## Optimized Search (Internal)
 This functionality transforms tracings and any associated data required for the search service into a format more suitable
-for search/query performance.  Although the code has been implemented to support delta, that functionality is not well-tested.
-At this time is likely better to drop the existing tables and repopulate from scratch.
+for search/query performance.
 
-To do this use yor graphical SQL tool of choice or the postgres command line interface to drop the existing tables.  Then
-load the database password:
+From the location of the mnb-internal-deploy repo  (currently on `mouselight.int.janelia.org`) as `mluser`
+
+`cd /data/sites/mnb/mnb-internal-deploy`
 
 `source options.sh`
 
-and start an interactive session connected to the system
+Start an interactive session connected to the system
 
 `docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -e DATABASE_PW=${DATABASE_PW} mouselightdatabrowser/data-services:1.6 /bin/bash`
 
@@ -110,6 +110,14 @@ of all contents include `forceUpdate`.
 
 `yarn run optimize --forceUpdate=true`
 
+At this point the database will be updated, however the system caches the known tracings for performance.
+
+Restart the services and reload the cache 
+
+`./stop.sh`
+
+`./start.sh`
+
 ## Optimized Search (External)
 This is similar to the above process for internal the search database.  The primary difference is the optimized output is stored
 in a different search database that only contains neurons marked for public use.  This allows for a simple database
@@ -121,6 +129,8 @@ importing the staged data into the actual public instance.
 #### Migration (if required)
 
 In the internal deploy directory, load the configuration
+
+`cd /data/sites/mnb/mnb-internal-deploy`
 
 `source options.sh`
 
@@ -172,7 +182,15 @@ The staging instance refers to a complete instance of the `mnb-public-deploy` sy
 and validation.  The public instance refers the external, generally accessible instance.
 
 ##### Staging Instance
+The staging instance is the set of services that runs on the public browser virtual machine.  It has the same number
+of service instances as the public instance and does not contain the data manager services that are only used internally for
+data preparation (Sample Manager, SWC Manager, etc).
+
+This instance is normally turned off unless a new set of published tracings is being tested/verified before pushing to the public instance to conserve resources.
+
 Start an interactive data-services container on the host and docker network that contains the public instance: 
+
+`cd /data/sites/mnb/mnb-public-deploy`
 
 `source env.sh`
 
@@ -197,9 +215,17 @@ Execute the following commands (assumings a similar volume mapping above to expo
 _Note that the search database container for the blue or green instance to be updated may need to be (re)started 
 prior to the followings if it is the current offline instance._
 
-Start an interactive data-services container on the host and docker network that contains the public instance: 
+Start an interactive data-services container on the host and docker network that contains the public instance (currently at `10.10.1.79`: 
 
-`source env`
+`cd /data/mnb/blue`
+
+or 
+
+`cd /data/mnb/green`
+
+depending on which is currently _inactive_ and will be receiving the update and made active.
+
+`source .env`
 
 followed by (assumes search database dump has placed in `data-import` in the respective instance location)
 
@@ -236,20 +262,24 @@ From there, navigate to the `synthetic` directory and use
 `npm run generate`
 
 ## Step-By-Step Update of Public Dataset
+
+This is the combination of the  various items above to do a typical update from the data managers to the internal/team instances, to the 
+public staging instance, to the actual public instance.
+
 #### On the Internal Production System
 
 * Make sure all samples and neurons are marked public/internal/inherited/private as desired
-* If the search table schemas have changed
-    * `docker pull` the latest version of the mouselightdatabrowser/data, /search-api, and /search-client containers
+* Perform the `Backup` section above
 * `git pull` in the deployment directory (currently ~/mouselight/ne-system-prod on ml-ubuntu-test)
-* Drop all of the tables in the search database instance
-* Use `./migrate.sh` in the deployment directory
+* If the search table schemas have changed
+  * `docker pull` the latest version of the mouselightdatabrowser/data, /search-api, and /search-client containers
+  * Drop all of the tables in the search database instance
+  * Use `./migrate.sh` in the deployment directory
 * Perform the `Optimized Search` section above and wait until it fully completes (need all nodes in the database for the next step
 * Use `docker` to stop and restart search-api and search-client and verify the contents are correct and functional in the production viewer for what is expected on the public viewer
-* Perform the `Backup` section above
-* `scp` the data dump file to /data/import on the public machine
+* `scp` the sql data dump file to /data-import on the public machine
 * Perform the `Export` section above
-    * `tar` the json and swc ouput directories
+    * `tar.gz` the json and swc ouput directories
     * `scp` them to /data/export on the public machine
 * On the public machine
     * `docker pull` the latest version of the mouselightdatabrowser/data, /search-api, and /search-client containers
