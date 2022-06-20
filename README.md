@@ -116,7 +116,7 @@ Restart the services and reload the cache
 
 `./stop.sh`
 
-`./start.sh`
+`./up.sh`
 
 ## Optimized Search (External)
 This is similar to the above process for internal the search database.  The primary difference is the optimized output is stored
@@ -209,6 +209,14 @@ Execute the following commands (assumings a similar volume mapping above to expo
 `psql -h search-db -p 5432 -U postgres -d search_production -c "GRANT ALL ON SCHEMA public TO public;"`
 
 `psql -h search-db -p 5432 -U postgres -d search_production -f /opt/data/backup/search-public/search-public.pg`
+
+Exit the container.
+
+Restart the services and reload the cache 
+
+`./stop.sh`
+
+`./up.sh`
 
 ##### Public Instance
 
