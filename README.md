@@ -192,7 +192,7 @@ Start an interactive data-services container on the host and docker network that
 
 `cd /data/sites/mnb/mnb-public-deploy`
 
-`source env.sh`
+`source .env`
 
 followed by
 
