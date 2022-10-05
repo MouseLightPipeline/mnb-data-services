@@ -24,6 +24,7 @@ export type SearchContentAttributes = {
     tracingId: string;
     brainAreaId: string;
     tracingStructureId: string;
+    manualSomaCompartmentId?: string;
 }
 
 export class SearchContentBase extends BaseModel implements SearchContentAttributes {
@@ -48,11 +49,13 @@ export class SearchContentBase extends BaseModel implements SearchContentAttribu
     public neuron?: SearchNeuron;
     public tracing?: SearchTracing;
     public tracingStructure?: SearchTracingStructure;
+    public manualSomaCompartment?: SearchBrainArea;
 
     public getBrainArea!: BelongsToGetAssociationMixin<SearchBrainArea>;
     public getNeuron!: BelongsToGetAssociationMixin<SearchNeuron>;
     public getTracing!: BelongsToGetAssociationMixin<SearchTracing>;
     public getTracingStructure!: BelongsToGetAssociationMixin<SearchTracingStructure>;
+    public getManualSomaCompartment!: BelongsToGetAssociationMixin<SearchBrainArea>;
 }
 
 export interface ICompartmentContentForTracingIdsWithSoma {

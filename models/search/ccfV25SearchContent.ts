@@ -65,4 +65,5 @@ export const modelAssociate = () => {
     CcfV25SearchContent.belongsTo(SearchBrainArea, {foreignKey: "brainAreaId", as: "brainArea"});
     CcfV25SearchContent.belongsTo(SearchNeuron, {foreignKey: "neuronId", as: "neuron"});
     CcfV25SearchContent.belongsTo(SearchTracingStructure, {foreignKey: "tracingStructureId", as: "tracingStructure"});
+    CcfV25SearchContent.belongsTo(SearchBrainArea, {foreignKey: "manualSomaCompartmentId", as: "manualSomaCompartment"});
 };

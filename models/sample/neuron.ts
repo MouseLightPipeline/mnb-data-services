@@ -18,6 +18,7 @@ import {Injection} from "./injection";
 import {Sample} from "./sample";
 import {Fluorophore} from "./fluorophore";
 import {InjectionVirus} from "./injectionVirus";
+import {IAnnotationMetadata} from "./annotationMetadata";
 
 export enum ConsensusStatus {
     Full,
@@ -60,8 +61,11 @@ export class Neuron extends BaseModel {
     public doi: string;
     public sharing: number;
     public consensus: ConsensusStatus;
+    public annotationMetadata?: string;
     public brainAreaId?: string;
     public injectionId?: string;
+
+    public metadata?: IAnnotationMetadata;
 
     public getInjection!: BelongsToGetAssociationMixin<Injection>;
     public getBrainArea!: BelongsToGetAssociationMixin<BrainArea>;
@@ -302,6 +306,18 @@ export const modelInit = (sequelize: Sequelize) => {
         },
         consensus: {
             type: DataTypes.INTEGER
+        },
+        annotationMetadata: {
+            type: DataTypes.TEXT
+        },
+        metadata: {
+            type: DataTypes.VIRTUAL,
+            get: function (): IAnnotationMetadata {
+                return JSON.parse(this.getDataValue("annotationMetadata")) || [];
+            },
+            set: function (value: IAnnotationMetadata) {
+                this.setDataValue("annotationMetadata", JSON.stringify(value));
+            }
         }
     }, {
         timestamps: true,

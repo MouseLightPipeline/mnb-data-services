@@ -32,12 +32,6 @@ export enum SearchScope {
     Published
 }
 
-type NeuronCache = Map<string, SearchNeuron>;
-
-class NeuronCounts {
-    [key: number]: number;
-}
-
 export type SearchNeuronAttributes = {
     id: string;
     idString: string;
@@ -49,7 +43,8 @@ export type SearchNeuronAttributes = {
     doi: string;
     consensus: ConsensusStatus;
     searchScope: SearchScope;
-    brainAreaId: string;
+    brainAreaId?: string;
+    manualSomaCompartmentId?: string;
     updatedAt?: Date;
 }
 
@@ -63,14 +58,17 @@ export class SearchNeuron extends BaseModel {
     public doi: string;
     public consensus: ConsensusStatus;
     public searchScope: SearchScope;
-    public brainAreaId: string;
+    public brainAreaId?: string;
+    public manualSomaCompartmentId?: string;
 
     public getBrainArea!: BelongsToGetAssociationMixin<SearchBrainArea>;
     public getSample!: BelongsToGetAssociationMixin<SearchSample>;
     public getTracings!: HasManyGetAssociationsMixin<SearchTracing>;
+    public getManualSomaCompartment!: BelongsToGetAssociationMixin<SearchBrainArea>;
 
     public tracings?: SearchTracing[];
     public brainArea?: SearchBrainArea;
+    public manualSomaCompartment?: SearchBrainArea;
 }
 
 export const modelInit = (sequelize: Sequelize) => {
@@ -99,6 +97,7 @@ export const modelInit = (sequelize: Sequelize) => {
 export const modelAssociate = () => {
     SearchNeuron.belongsTo(SearchSample, {foreignKey: {name: "sampleId"}});
     SearchNeuron.belongsTo(SearchBrainArea, {foreignKey: {name: "brainAreaId", allowNull: true}, as: "brainArea"});
+    SearchNeuron.belongsTo(SearchBrainArea, {foreignKey: "manualSomaCompartmentId", as: "manualSomaCompartment"});
     SearchNeuron.hasMany(SearchTracing, {foreignKey: "neuronId", as: "tracings"});
     SearchNeuron.hasMany(CcfV25SearchContent, {foreignKey: "neuronId"});
     SearchNeuron.hasMany(CcfV30SearchContent, {foreignKey: "neuronId"});
