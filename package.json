@@ -11,7 +11,7 @@
     "backup": "node backup/backup.js",
     "restore": "node restore/restore.js",
     "export": "node export/export.js",
-    "optimize": "node optimize/optimize.js",
+    "optimize": "node --max-old-space-size=8192 --optimize-for-size optimize/optimize.js",
     "metrics": "node export/metrics.js",
     "clean": "tsc && gulp clean",
     "compile": "tsc && gulp compile",

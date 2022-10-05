@@ -93,6 +93,8 @@ export class SearchOptimization {
     private generateContents(): Promise<boolean> {
         return new Promise<boolean>(async (resolve) => {
             try {
+                await SearchBrainArea.loadCompartmentCache();
+
                 await this.syncBrainAreas();
 
                 await this.syncStructureIdentifiers();
@@ -330,7 +332,7 @@ export class SearchOptimization {
                             }
 
                             if (!found) {
-                                debug(`neuron ${n.idString} required soma look up but none of the somas reference a brain area`);
+                                debug(`neuron ${n.idString} required soma look up but none of the tracing soma nodes reference a brain area`);
                             }
 
                         } else {
@@ -343,6 +345,10 @@ export class SearchOptimization {
                     if (searchNeuron.brainAreaId === null) {
                         debug(`failed to look up brain area id for neuron ${n.idString} from tracings`);
                     }
+                }
+
+                if (n.metadata?.manualAnnotations?.somaCompartmentId != undefined) {
+                    searchNeuron.manualSomaCompartmentId = SearchBrainArea.getByStructureId(n.metadata.manualAnnotations.somaCompartmentId)?.id ?? null;
                 }
 
                 const visibility = n.sharing === ShareVisibility.Inherited ? n.injection.sample.sharing : n.sharing;
@@ -642,9 +648,7 @@ export class SearchOptimization {
 
             const neuron = this.neuronMap.get(tracing.neuronId);
 
-            if (neuron) {
-                obj.neuronId = neuron.id;
-            } else {
+            if (!neuron) {
                 debug(`no neuron for tracing ${tracing.id} referencing ${tracing.neuronId}`);
                 return null;
             }
@@ -662,9 +666,11 @@ export class SearchOptimization {
 
             obj.tracingStructureId = tracing.tracingStructureId;
 
+            obj.neuronId = neuron.id;
             obj.neuronIdString = neuron.idString;
             obj.neuronDOI = neuron.doi;
             obj.neuronConsensus = neuron.consensus;
+            obj.manualSomaCompartmentId = neuron.manualSomaCompartmentId;
 
             obj.searchScope = neuron.searchScope;
 

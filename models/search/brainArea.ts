@@ -30,8 +30,14 @@ export class SearchBrainArea extends BaseModel {
 
     private static _brainAreaCache = new Map<string, SearchBrainArea>();
 
+    private static _compartmentByStructureIdCache = new Map<number, SearchBrainArea>()
+
     public static getOne(id: string) {
         return this._brainAreaCache.get(id);
+    }
+
+    public static getByStructureId(structureId: number): SearchBrainArea {
+        return this._compartmentByStructureIdCache.get(structureId);
     }
 
     public static getComprehensiveBrainArea(id: string): string[] {
@@ -47,6 +53,8 @@ export class SearchBrainArea extends BaseModel {
             const b = brainAreas[idx];
 
             this._brainAreaCache.set(b.id, b);
+
+            this._compartmentByStructureIdCache.set(b.structureId, b);
 
             const result = await SearchBrainArea.findAll({
                 attributes: ["id", "structureIdPath"],
