@@ -12,7 +12,7 @@ const argv = yargs(hideBin(process.argv))
         visibility: {type: "number", default: ShareVisibility.DoNotShare, conflicts: "neuron"},
         forceUpdate: {type: "boolean", default: false},
         neuron: {type: "string", conflicts: "visibility"}
-    }).argv;
+    }).parseSync();
 
 debug(`using minimum visibility level of ${argv.visibility}`);
 

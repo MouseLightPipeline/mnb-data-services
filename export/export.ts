@@ -45,7 +45,7 @@ const argv = yargs(hideBin(process.argv))
         outputLocation: {type: "string", default: ServiceOptions.exportPath},
         ccfVersion: {choices: CcfVersionNames, default: CcfVersion[CcfVersion.Ccf25]},
         visibility: {choices: VisibilityNames, default: Visibility[Visibility.Public]},
-    }).argv;
+    }).parseSync();
 
 debug(`output to location: ${argv.outputLocation}`);
 debug(`ccf version: ${argv.ccfVersion}`);
