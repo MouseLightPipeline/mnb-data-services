@@ -1,12 +1,11 @@
-FROM node:12.9
+FROM node:12.22
 
 WORKDIR /apps
 
-RUN apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net --recv-keys B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
+# Update the package lists:
+# RUN apt update
 
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main" > /etc/apt/sources.list.d/pgdg.list
-
-RUN apt-get update && apt-get install -y software-properties-common postgresql-9.6 postgresql-client-9.6 postgresql-contrib-9.6
+# RUN apt -y install postgresql-client
 
 COPY dist .
 

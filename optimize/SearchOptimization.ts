@@ -284,6 +284,8 @@ export class SearchOptimization {
                     sampleId: n.injection.sample.id
                 });
 
+                delete searchNeuron["injection"];
+
                 let userDefinedBrainArea = false;
 
                 if (n.brainAreaId !== null) {
@@ -351,6 +353,21 @@ export class SearchOptimization {
                     searchNeuron.manualSomaCompartmentId = SearchBrainArea.getByStructureId(n.metadata.manualAnnotations.somaCompartmentId)?.id ?? null;
                 }
 
+                if (n.metadata?.manualAnnotations?.curatedCompartmentId != undefined) {
+                    searchNeuron.manualSomaCompartmentId = SearchBrainArea.getByStructureId(n.metadata.manualAnnotations.curatedCompartmentId)?.id ?? null;
+                }
+
+                if (n.metadata?.manualAnnotations?.legacyCompartmentIds && n.metadata.manualAnnotations.legacyCompartmentIds.length > 0) {
+                    searchNeuron.legacySomaIds = JSON.stringify(n.metadata.manualAnnotations.legacyCompartmentIds.map(id => SearchBrainArea.getByStructureId(id)?.id).filter(s => s != null));
+                }
+
+                if (n.metadata?.externalReferences?.hortaCloud) {
+                    searchNeuron.hortaDeepLink = n.metadata?.externalReferences?.hortaCloud;
+                }
+
+                delete searchNeuron["metadata"];
+                delete searchNeuron["annotationMetadata"];
+
                 const visibility = n.sharing === ShareVisibility.Inherited ? n.injection.sample.sharing : n.sharing;
 
                 switch (visibility) {
@@ -373,6 +390,12 @@ export class SearchOptimization {
                 searchNeuron.updatedAt = new Date();
 
                 const [model] = await SearchNeuron.upsert(searchNeuron, {returning: true});
+
+                if (!model?.id) {
+                    debug(`issue with upsert for ${searchNeuron.id}: ${searchNeuron.idString}`);
+                    debug(`${JSON.stringify(searchNeuron, null, 2)}`);
+                    debug(`${model}`);
+                }
 
                 this.requiredNeurons.push(model.id);
 
@@ -491,13 +514,17 @@ export class SearchOptimization {
 
             const [model] = await SearchTracing.upsert(searchTracing, {returning: true});
 
-            this.tracingsMap.set(model.id, model);
+            if (!model?.id) {
+                debug(JSON.stringify(searchTracing, null, 2));
+            }
 
-            this.updateRequiredForTracings.push(model.id);
+            this.tracingsMap.set(model.id, model);
 
             await CcfV25SearchContent.destroy({where: {tracingId: model.id}});
             await CcfV30SearchContent.destroy({where: {tracingId: model.id}});
             await SearchTracingNode.destroy({where: {tracingId: model.id}});
+
+            this.updateRequiredForTracings.push(model.id);
         } else {
             skipped = true;
         }
@@ -531,7 +558,11 @@ export class SearchOptimization {
                 where: {tracingId: {[Op.in]: this.updateRequiredForTracings}}
             });
 
-            await SearchTracingNode.bulkCreate(nodes.map(n => n.toJSON()));
+            try {
+                await SearchTracingNode.bulkCreate(nodes.map(n => n.toJSON()));
+            } catch (err) {
+                debug(err)
+            }
 
             // debug(`${offset + nodes.length} inserted`);
             bar.increment(NODE_INSERT_INCREMENT);
@@ -738,6 +769,8 @@ export class SearchOptimization {
         await Promise.all(input.map(async (b) => {
             await dstModel.upsert(b.toJSON());
         }));
+
+        debug(`Upsert ${name} complete`);
     }
 
     private async removeSearchContent(searchCompartmentTable: ICompartmentContentRemoveWhere) {
