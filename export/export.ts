@@ -272,7 +272,7 @@ function swcHeader(sample: Sample, mouse: MouseStrain, virus: InjectionVirus, fl
         + `# DOI:\t\t\t\t\t${neuron.doi || "n/a"}\n`
         + `# Neuron Id:\t\t\t${neuron.idString}\n`
         + `# Sample Date:\t\t\t${sample.sampleDate.toUTCString()}\n`
-        + `# Sample Strain:\t\t${mouse.name}\n`
+        + `# Sample Strain:\t\t${mouse?.name ?? "<not specified>"}\n`
         + `# Label Virus:\t\t\t${virus.name}\n`
         + `# Label Fluorophore:\t\t${fluorophore.name}\n`
         + (isCcfv3 ?
@@ -340,7 +340,7 @@ async function mapToJSON(sample: Sample, mouse: MouseStrain, virus: InjectionVir
             DOI: neuron.doi || "n/a",
             sample: {
                 date: sample.sampleDate,
-                strain: mouse.name
+                strain: mouse?.name ?? "<not specified>"
             },
             label: {
                 virus: virus.name,

@@ -58,7 +58,7 @@ There is no pre-made script for export.  To run, load the database password:
 
 and start an interactive session connected to the system for the export
 
-`docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -e DATABASE_PW=${DATABASE_PW} -v /data/sites/mnb/:/opt/data mouselightdatabrowser/data-services:1.6 /bin/bash`
+`docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -e DATABASE_PW=${DATABASE_PW} -v /data/sites/mnb/:/opt/data mouselightdatabrowser/data-services:1.7 /bin/bash`
 
 assuming a typical setup with the mnb_back_tier network.
 
@@ -95,7 +95,7 @@ From the location of the mnb-internal-deploy repo  (currently on `mouselight.int
 
 Start an interactive session connected to the system
 
-`docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -e DATABASE_PW=${DATABASE_PW} mouselightdatabrowser/data-services:1.6 /bin/bash`
+`docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -e DATABASE_PW=${DATABASE_PW} mouselightdatabrowser/data-services:1.7 /bin/bash`
 
 Perform the migration
 
@@ -137,7 +137,7 @@ In the internal deploy directory, load the configuration
 If the public search database has never been populated or the schema has been changed, it must be migrated.  Start an interactive session with a 
 sample-api container
 
-`docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -e DATABASE_PW=${DATABASE_PW} mouselightdatabrowser/search-api:1.6 /bin/bash`
+`docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -e DATABASE_PW=${DATABASE_PW} mouselightdatabrowser/search-api:1.7 /bin/bash`
 
 In the container shell, point to the public search database instance
 
@@ -156,7 +156,7 @@ services.  It is not the
 
 Start an interactive session with a data-services container connected to the system
 
-`docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -e DATABASE_PW=${DATABASE_PW} -v /data/sites/mnb/:/opt/data mouselightdatabrowser/data-services:1.6 /bin/bash`
+`docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -e DATABASE_PW=${DATABASE_PW} -v /data/sites/mnb/:/opt/data mouselightdatabrowser/data-services:1.7 /bin/bash`
 
 In the container shell, point to the public search database instance and enable feedback
 
@@ -196,7 +196,7 @@ Start an interactive data-services container on the host and docker network that
 
 followed by
 
-`docker run -it --rm --network mnb-public_back_tier -e NODE_ENV=production -e PGPASSWORD=${DATABASE_PW} -v /data/sites/mnb/:/opt/data mouselightdatabrowser/data-services:1.6 /bin/bash`
+`docker run -it --rm --network mnb-public_back_tier -e NODE_ENV=production -e PGPASSWORD=${DATABASE_PW} -v /data/sites/mnb/:/opt/data mouselightdatabrowser/data-services:1.7 /bin/bash`
 
 Execute the following commands (assumings a similar volume mapping above to expose the .pg file in the location below)
 
@@ -237,11 +237,11 @@ depending on which is currently _inactive_ and will be receiving the update and 
 
 followed by (assumes search database dump has placed in `data-import` in the respective instance location)
 
-`docker run -it --rm --network mnbblue_back_tier -e NODE_ENV=production -e PGPASSWORD=${DATABASE_PW} -v /data/mnb/blue/data-import:/opt/data mouselightdatabrowser/data-services:1.6 /bin/bash`
+`docker run -it --rm --network mnbblue_back_tier -e NODE_ENV=production -e PGPASSWORD=${DATABASE_PW} -v /data/mnb/blue/data-import:/opt/data mouselightdatabrowser/data-services:1.7 /bin/bash`
 
 or 
 
-`docker run -it --rm --network mnbgreen_back_tier -e NODE_ENV=production -e PGPASSWORD=${DATABASE_PW} -v /data/mnb/green/data-import:/opt/data mouselightdatabrowser/data-services:1.6 /bin/bash`
+`docker run -it --rm --network mnbgreen_back_tier -e NODE_ENV=production -e PGPASSWORD=${DATABASE_PW} -v /data/mnb/green/data-import:/opt/data mouselightdatabrowser/data-services:1.7 /bin/bash`
 
 depending on whether blue or green is next update.
 
@@ -263,7 +263,7 @@ well-tested.
 
 There is no pre-made script.  To use, start an interactive session
 
-`docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -e DATABASE_PW=${DATABASE_PW} mouselightdatabrowser/data-services:1.6 /bin/bash`
+`docker run -it --rm --network mnb_back_tier -e NODE_ENV=production -e DATABASE_PW=${DATABASE_PW} mouselightdatabrowser/data-services:1.7 /bin/bash`
 
 From there, navigate to the `synthetic` directory and use
 
