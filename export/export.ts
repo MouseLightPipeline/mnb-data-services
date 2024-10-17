@@ -45,6 +45,7 @@ const argv = yargs(hideBin(process.argv))
         outputLocation: {type: "string", default: ServiceOptions.exportPath},
         ccfVersion: {choices: CcfVersionNames, default: CcfVersion[CcfVersion.Ccf25]},
         visibility: {choices: VisibilityNames, default: Visibility[Visibility.Public]},
+        neuron: {type: "string", default: null}
     }).parseSync();
 
 debug(`output to location: ${argv.outputLocation}`);
@@ -53,6 +54,7 @@ debug(`visibility: ${argv.visibility}`);
 
 const pathStructureMap = new Map<string, number>();
 const brainAreaMap = new Map<string, BrainArea>();
+const brainAreaStructureIdMap = new Map<number, BrainArea>();
 const neuronTracingMap = new Map<string, Tracing[]>();
 const tracingStructureMap = new Map<string, string>();
 
@@ -60,9 +62,9 @@ let axonId: string = null;
 let dendriteId: string = null;
 let somaId: string = null;
 
-generateContents(argv.outputLocation, CcfVersion[argv.ccfVersion], Visibility[argv.visibility]).then();
+generateContents(argv.outputLocation, CcfVersion[argv.ccfVersion], Visibility[argv.visibility], argv.neuron).then();
 
-export async function generateContents(outputLocation: string, version: CcfVersion, minVisibility: Visibility) {
+export async function generateContents(outputLocation: string, version: CcfVersion, minVisibility: Visibility, neuron: string) {
     const isCcfv3 = version === CcfVersion.Ccf30;
 
     const swcFolder = "swc" + (isCcfv3 ? "30" : "25");
@@ -97,7 +99,10 @@ export async function generateContents(outputLocation: string, version: CcfVersi
 
         const brainAreas: BrainArea[] = await BrainArea.findAll({});
 
-        brainAreas.map(b => brainAreaMap.set(b.id, b));
+        brainAreas.map(b => {
+            brainAreaMap.set(b.id, b);
+            brainAreaStructureIdMap.set(b.structureId, b);
+        });
 
         debug("load tracings");
 
@@ -133,29 +138,45 @@ export async function generateContents(outputLocation: string, version: CcfVersi
 
         debug("load neurons");
 
-        let neurons = await Neuron.findAll({
-            include: [{
-                model: Injection,
-                as: "injection",
+        let neurons: Neuron[] = [];
+
+        if (neuron) {
+            neurons = [await Neuron.findByPk(neuron, {
                 include: [{
-                    model: Sample,
-                    as: "sample"
-                }]
-            }],
-            order: ["idString"]
-        });
+                    model: Injection,
+                    as: "injection",
+                    include: [{
+                        model: Sample,
+                        as: "sample"
+                    }]
+                }],
+                order: ["idString"]
+            })];
+        } else {
+            neurons = await Neuron.findAll({
+                include: [{
+                    model: Injection,
+                    as: "injection",
+                    include: [{
+                        model: Sample,
+                        as: "sample"
+                    }]
+                }],
+                order: ["idString"]
+            });
 
-        debug(`found ${neurons.length} input neurons`);
+            debug(`found ${neurons.length} input neurons`);
 
-        const shareMinVisibility = minVisibility === Visibility.Public ? ShareVisibility.ShareAllExternal : ShareVisibility.DoNotShare;
+            const shareMinVisibility = minVisibility === Visibility.Public ? ShareVisibility.ShareAllExternal : ShareVisibility.DoNotShare;
 
-        neurons = neurons.filter(n => {
-            const visibility = n.sharing === ShareVisibility.Inherited ? n.injection.sample.sharing : n.sharing;
+            neurons = neurons.filter(n => {
+                const visibility = n.sharing === ShareVisibility.Inherited ? n.injection.sample.sharing : n.sharing;
 
-            return visibility >= shareMinVisibility;
-        });
+                return visibility >= shareMinVisibility;
+            });
 
-        debug(`${neurons.length} neurons meet visibility requirements`);
+            debug(`${neurons.length} neurons meet visibility requirements`);
+        }
 
         bar = new progress.SingleBar({}, progress.Presets.shades_classic);
 
@@ -193,14 +214,41 @@ async function processNeuron(neuron: Neuron, outputLocation: string, swcSubdir: 
 
     // ---
 
-    let swc = swcHeader(sample, mouse, injectionVirus, fluorophore, neuron, isCcfv3);
-
     const tracings: Tracing[] = neuronTracingMap.get(neuron.id);
 
     if (!tracings || tracings.length === 0) {
         debug(`skipping neuron ${neuron.idString} for zero tracings`)
         return;
     }
+
+    let axon: Tracing = null;
+    let dendrite: Tracing = null;
+
+    for (let tracing of tracings) {
+        const structure = tracingStructureMap.get(tracing.id);
+
+        if (structure == axonId) {
+            axon = tracing;
+        } else if (structure == dendriteId) {
+            dendrite = tracing;
+        }
+    }
+
+    let soma = axon != null ? await TracingNode.findOne({
+        where: {
+            tracingId: axon.id,
+            structureIdentifierId: somaId
+        }
+    }) : (dendrite != null ? await TracingNode.findOne({
+        where: {
+            tracingId: dendrite.id,
+            structureIdentifierId: somaId
+        }
+    }) : null);
+
+    // SWC
+
+    let swc = swcHeader(sample, mouse, injectionVirus, fluorophore, neuron, soma, isCcfv3);
 
     // Promise chain to force serial export of multiple tracings for the neuron.  Required to allow for sample number
     // offsets when appending multiple tracings.
@@ -233,32 +281,7 @@ async function processNeuron(neuron: Neuron, outputLocation: string, swcSubdir: 
 
     fs.writeFileSync(path.join(outputLocation, swcSubdir, neuron.idString + ".swc"), swc);
 
-    // --- JSON
-
-    let axon: Tracing = null;
-    let dendrite: Tracing = null;
-
-    for (let tracing of tracings) {
-        const structure = tracingStructureMap.get(tracing.id);
-
-        if (structure == axonId) {
-            axon = tracing;
-        } else if (structure == dendriteId) {
-            dendrite = tracing;
-        }
-    }
-
-    let soma = axon != null ? await TracingNode.findOne({
-        where: {
-            tracingId: axon.id,
-            structureIdentifierId: somaId
-        }
-    }) : (dendrite != null ? await TracingNode.findOne({
-        where: {
-            tracingId: dendrite.id,
-            structureIdentifierId: somaId
-        }
-    }) : null);
+    // JSON
 
     const obj = await mapToJSON(sample, mouse, injectionVirus, fluorophore, neuron, axon, dendrite, soma, isCcfv3);
 
@@ -267,17 +290,54 @@ async function processNeuron(neuron: Neuron, outputLocation: string, swcSubdir: 
     }
 }
 
-function swcHeader(sample: Sample, mouse: MouseStrain, virus: InjectionVirus, fluorophore: Fluorophore, neuron: Neuron, isCcfv3: boolean) {
-    return `# Please consult Terms-of-Use at https://mouselight.janelia.org when referencing this reconstruction.\n`
+function swcHeader(sample: Sample, mouse: MouseStrain, virus: InjectionVirus, fluorophore: Fluorophore, neuron: Neuron, soma: TracingNode, isCcfv3: boolean) {
+    let header = `# Please consult Terms-of-Use at https://mouselight.janelia.org when referencing this reconstruction.\n`
         + `# DOI:\t\t\t\t\t${neuron.doi || "n/a"}\n`
         + `# Neuron Id:\t\t\t${neuron.idString}\n`
         + `# Sample Date:\t\t\t${sample.sampleDate.toUTCString()}\n`
         + `# Sample Strain:\t\t${mouse?.name ?? "<not specified>"}\n`
         + `# Label Virus:\t\t\t${virus.name}\n`
-        + `# Label Fluorophore:\t\t${fluorophore.name}\n`
+        + `# Label Fluorophore:\t${fluorophore.name}\n`
         + (isCcfv3 ?
-            `# Annotation Space:\t\tCCFv3.0             Axes> X: Anterior-Posterior; Y: Inferior-Superior; Z:Left-Right\n` :
+            `# Annotation Space:\t\tCCFv3.0 Axes> X: Anterior-Posterior; Y: Inferior-Superior; Z:Left-Right\n` :
             `# Annotation Space:\t\tCCFv2.5 (ML legacy) Axes> Z: Anterior-Posterior; Y: Inferior-Superior; X:Left-Right\n`);
+
+    if (soma) {
+        const somaBrainArea = isCcfv3 ? brainAreaMap.get(soma.brainAreaIdCcfV30) : brainAreaMap.get(soma.brainAreaIdCcfV25);
+        header += `# Soma Compartment Id:\t\t   ${somaBrainArea?.structureId} (${somaBrainArea?.name ?? "unknown"})\n`;
+    }
+
+    if (neuron.annotationMetadata) {
+        try {
+            const annotationObj = JSON.parse(neuron.annotationMetadata);
+
+            if (annotationObj?.manualAnnotations) {
+                if (annotationObj.manualAnnotations.curatedCompartmentId) {
+                    const compartment = brainAreaStructureIdMap.get(annotationObj.manualAnnotations.curatedCompartmentId);
+                    header += `# Curated Soma Compartment Id: ${annotationObj.manualAnnotations.curatedCompartmentId} (${compartment?.name ?? "unknown"})\n`;
+                }
+
+                const legacy = annotationObj.manualAnnotations.legacyCompartmentIds;
+
+                if (legacy && legacy.length > 0) {
+                    const names = legacy.map(id => brainAreaStructureIdMap.get(id)?.name ?? "unknown");
+                    header += `# Legacy Soma Compartment Ids: ${legacy.join(", ")} (${names.join(", ")})\n`;
+                }
+
+                if (annotationObj.manualAnnotations.procrustesAxon) {
+                    header += `# Procrustes Axon:\t\t\t   ${annotationObj.manualAnnotations.procrustesAxon}\n`;
+                }
+
+                if (annotationObj.manualAnnotations.procrustesDend) {
+                    header += `# Procrustes Dendrite:\t\t   ${annotationObj.manualAnnotations.procrustesDend}\n`;
+                }
+            }
+        } catch (ex) {
+            debug(`failed to parse annotation metadata for ${neuron.idString}`)
+        }
+    }
+
+    return header;
 }
 
 function mapToSwc(nodes: TracingNode[], pathStructure: number, offset: number = 0, flip: boolean): string {
@@ -350,41 +410,74 @@ async function mapToJSON(sample: Sample, mouse: MouseStrain, virus: InjectionVir
                 version: isCcfv3 ? 3.0 : 2.5,
                 description: isCcfv3 ? "Annotation Space: CCFv3.0 Axes> X: Anterior-Posterior; Y: Inferior-Superior; Z:Left-Right" : "Annotation Space: CCFv2.5 (ML legacy) Axes> Z: Anterior-Posterior; Y: Inferior-Superior; X:Left-Right",
             },
-            soma: somaObj,
-            axon: axonNodes.map(n => {
-                const brainAreaId = isCcfv3 ? n.brainAreaIdCcfV30 :n.brainAreaIdCcfV25;
-
-                if (brainAreaId) allenIds.push(brainAreaId);
-
-                return {
-                    sampleNumber: n.sampleNumber,
-                    structureIdentifier: n.parentNumber === -1 ? 1 : 2,
-                    x: (isCcfv3 ? n.z : n.x),
-                    y: n.y,
-                    z: (isCcfv3 ? n.x : n.z),
-                    radius: n.radius,
-                    parentNumber: n.parentNumber,
-                    allenId: brainAreaId ? brainAreaMap.get(brainAreaId).structureId : null
-                }
-            }),
-            dendrite: dendriteNodes.map(n => {
-                const brainAreaId = isCcfv3 ? n.brainAreaIdCcfV30 :n.brainAreaIdCcfV25;
-
-                if (brainAreaId) allenIds.push(brainAreaId);
-
-                return {
-                    sampleNumber: n.sampleNumber,
-                    structureIdentifier: n.parentNumber === -1 ? 1 : 3,
-                    x: (isCcfv3 ? n.z : n.x),
-                    y: n.y,
-                    z: (isCcfv3 ? n.x : n.z),
-                    radius: n.radius,
-                    parentNumber: n.parentNumber,
-                    allenId: brainAreaId ? brainAreaMap.get(brainAreaId).structureId : null
-                }
-            })
+            soma: somaObj
         }
-    };
+    }
+
+    if (neuron.annotationMetadata) {
+        try {
+            const annotationObj = JSON.parse(neuron.annotationMetadata);
+
+            if (annotationObj?.manualAnnotations) {
+                if (annotationObj.manualAnnotations.curatedCompartmentId) {
+                    obj.neuron["curatedSoma"] = {
+                        "allenId": annotationObj.manualAnnotations.curatedCompartmentId
+                    }
+                }
+
+                if (annotationObj.manualAnnotations.legacyCompartmentIds && annotationObj.manualAnnotations.legacyCompartmentIds.length > 0) {
+                    obj.neuron["legacySoma"] = {
+                        "allenIds": annotationObj.manualAnnotations.legacyCompartmentIds
+                    }
+                }
+
+                if (annotationObj.manualAnnotations.procrustesAxon) {
+                    obj.neuron["procrustesAxon"] = annotationObj.manualAnnotations.procrustesAxon;
+                }
+
+                if (annotationObj.manualAnnotations.procrustesDend) {
+                    obj.neuron["procrustesDendrite"] = annotationObj.manualAnnotations.procrustesDend;
+                }
+            }
+        } catch (ex) {
+            debug(`failed to parse annotation metadata for ${neuron.idString}`)
+        }
+    }
+
+
+    obj.neuron["axon"] = axonNodes.map(n => {
+        const brainAreaId = isCcfv3 ? n.brainAreaIdCcfV30 : n.brainAreaIdCcfV25;
+
+        if (brainAreaId) allenIds.push(brainAreaId);
+
+        return {
+            sampleNumber: n.sampleNumber,
+            structureIdentifier: n.parentNumber === -1 ? 1 : 2,
+            x: (isCcfv3 ? n.z : n.x),
+            y: n.y,
+            z: (isCcfv3 ? n.x : n.z),
+            radius: n.radius,
+            parentNumber: n.parentNumber,
+            allenId: brainAreaId ? brainAreaMap.get(brainAreaId).structureId : null
+        }
+    });
+
+    obj.neuron["dendrite"] = dendriteNodes.map(n => {
+        const brainAreaId = isCcfv3 ? n.brainAreaIdCcfV30 : n.brainAreaIdCcfV25;
+
+        if (brainAreaId) allenIds.push(brainAreaId);
+
+        return {
+            sampleNumber: n.sampleNumber,
+            structureIdentifier: n.parentNumber === -1 ? 1 : 3,
+            x: (isCcfv3 ? n.z : n.x),
+            y: n.y,
+            z: (isCcfv3 ? n.x : n.z),
+            radius: n.radius,
+            parentNumber: n.parentNumber,
+            allenId: brainAreaId ? brainAreaMap.get(brainAreaId).structureId : null
+        }
+    });
 
     allenIds = _.uniq(allenIds);
 
