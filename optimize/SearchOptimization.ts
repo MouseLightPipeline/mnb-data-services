@@ -351,6 +351,14 @@ export class SearchOptimization {
                     searchNeuron.manualSomaCompartmentId = SearchBrainArea.getByStructureId(n.metadata.manualAnnotations.somaCompartmentId)?.id ?? null;
                 }
 
+                if (n.metadata?.manualAnnotations?.curatedCompartmentId != undefined) {
+                    searchNeuron.manualSomaCompartmentId = SearchBrainArea.getByStructureId(n.metadata.manualAnnotations.curatedCompartmentId)?.id ?? null;
+                }
+
+                if (n.metadata?.manualAnnotations?.legacyCompartmentIds && n.metadata.manualAnnotations.legacyCompartmentIds.length > 0) {
+                    searchNeuron.legacySomaIds = JSON.stringify(n.metadata.manualAnnotations.legacyCompartmentIds.map(id => SearchBrainArea.getByStructureId(id)?.id));
+                }
+
                 const visibility = n.sharing === ShareVisibility.Inherited ? n.injection.sample.sharing : n.sharing;
 
                 switch (visibility) {

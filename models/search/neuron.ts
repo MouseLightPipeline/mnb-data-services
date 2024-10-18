@@ -6,8 +6,6 @@ import {BaseModel} from "../baseModel";
 import {SearchBrainArea} from "./brainArea";
 import {SearchTracing} from "./tracing";
 import {SearchSample} from "./sample";
-import {SearchTracingStructure} from "./tracingStructure";
-import {SearchTracingNode} from "./tracingNode";
 import {CcfV25SearchContent} from "./ccfV25SearchContent";
 import {CcfV30SearchContent} from "./ccfV30SearchContent";
 
@@ -45,6 +43,8 @@ export type SearchNeuronAttributes = {
     searchScope: SearchScope;
     brainAreaId?: string;
     manualSomaCompartmentId?: string;
+    legacySomaIds?: string;
+    hortaDeepLink?: string;
     updatedAt?: Date;
 }
 
@@ -60,6 +60,8 @@ export class SearchNeuron extends BaseModel {
     public searchScope: SearchScope;
     public brainAreaId?: string;
     public manualSomaCompartmentId?: string;
+    public legacySomaIds?: string;
+    public hortaDeepLink?: string;
 
     public getBrainArea!: BelongsToGetAssociationMixin<SearchBrainArea>;
     public getSample!: BelongsToGetAssociationMixin<SearchSample>;
@@ -69,6 +71,7 @@ export class SearchNeuron extends BaseModel {
     public tracings?: SearchTracing[];
     public brainArea?: SearchBrainArea;
     public manualSomaCompartment?: SearchBrainArea;
+    public legacySomaCompartments?: SearchBrainArea[];
 }
 
 export const modelInit = (sequelize: Sequelize) => {
@@ -86,7 +89,23 @@ export const modelInit = (sequelize: Sequelize) => {
         z: DataTypes.DOUBLE,
         searchScope: DataTypes.INTEGER,
         consensus: DataTypes.INTEGER,
-        doi: DataTypes.TEXT
+        doi: DataTypes.TEXT,
+        hortaDeepLink: DataTypes.TEXT,
+        legacySomaIds: DataTypes.TEXT,
+        legacySomaCompartments: {
+            type: DataTypes.VIRTUAL(DataTypes.ARRAY, ["legacySomaIds"]),
+            get: function (): string[] {
+                const ids = JSON.parse(this.getDataValue("legacySomaIds")) || [];
+                return ids.map(id => SearchBrainArea.getOne(id));
+            },
+            set: function (value: string[]) {
+                if (value && value.length === 0) {
+                    value = null;
+                }
+
+                this.setDataValue("legacySomaIds", JSON.stringify(value));
+            }
+        }
     }, {
         tableName: "Neuron",
         timestamps: true,

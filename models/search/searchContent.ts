@@ -25,6 +25,7 @@ export type SearchContentAttributes = {
     brainAreaId: string;
     tracingStructureId: string;
     manualSomaCompartmentId?: string;
+    legacySomaIds?: string;
 }
 
 export class SearchContentBase extends BaseModel implements SearchContentAttributes {
@@ -44,12 +45,15 @@ export class SearchContentBase extends BaseModel implements SearchContentAttribu
     public tracingId: string;
     public brainAreaId: string;
     public tracingStructureId: string;
+    public manualSomaCompartmentId?: string;
+    public legacySomaIds?: string;
 
     public brainArea?: SearchBrainArea;
     public neuron?: SearchNeuron;
     public tracing?: SearchTracing;
     public tracingStructure?: SearchTracingStructure;
     public manualSomaCompartment?: SearchBrainArea;
+    public legacySomaCompartments?: SearchBrainArea[];
 
     public getBrainArea!: BelongsToGetAssociationMixin<SearchBrainArea>;
     public getNeuron!: BelongsToGetAssociationMixin<SearchNeuron>;
@@ -110,5 +114,20 @@ export const SearchContentModelAttributes = {
     somaCount: DataTypes.INTEGER,
     pathCount: DataTypes.INTEGER,
     branchCount: DataTypes.INTEGER,
-    endCount: DataTypes.INTEGER
+    endCount: DataTypes.INTEGER,
+    legacySomaIds: DataTypes.TEXT,
+    legacySomaCompartments: {
+        type: DataTypes.VIRTUAL(DataTypes.ARRAY, ["legacySomaIds"]),
+        get: function (): string[] {
+            const ids = JSON.parse(this.getDataValue("legacySomaIds")) || [];
+            return ids.map(id => SearchBrainArea.getOne(id));
+        },
+        set: function (value: string[]) {
+            if (value && value.length === 0) {
+                value = null;
+            }
+
+            this.setDataValue("legacySomaIds", JSON.stringify(value));
+        }
+    }
 };
