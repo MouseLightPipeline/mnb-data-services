@@ -5,6 +5,11 @@ export interface IManualAnnotations {
     procrustesAxon?: number;
     procrustesDend?: number;
 }
+
+export interface IExternalReferences {
+    hortaCloud?: string;
+}
 export interface IAnnotationMetadata {
-    manualAnnotations?: IManualAnnotations
+    manualAnnotations?: IManualAnnotations;
+    externalReferences?: IExternalReferences;
 }

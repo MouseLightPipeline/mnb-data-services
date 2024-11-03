@@ -359,6 +359,10 @@ export class SearchOptimization {
                     searchNeuron.legacySomaIds = JSON.stringify(n.metadata.manualAnnotations.legacyCompartmentIds.map(id => SearchBrainArea.getByStructureId(id)?.id));
                 }
 
+                if (n.metadata?.externalReferences?.hortaCloud) {
+                    searchNeuron.hortaDeepLink = n.metadata?.externalReferences?.hortaCloud;
+                }
+
                 const visibility = n.sharing === ShareVisibility.Inherited ? n.injection.sample.sharing : n.sharing;
 
                 switch (visibility) {
