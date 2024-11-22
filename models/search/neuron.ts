@@ -62,7 +62,6 @@ export class SearchNeuron extends BaseModel {
     public manualSomaCompartmentId?: string;
     public legacySomaIds?: string;
     public hortaDeepLink?: string;
-
     public getBrainArea!: BelongsToGetAssociationMixin<SearchBrainArea>;
     public getSample!: BelongsToGetAssociationMixin<SearchSample>;
     public getTracings!: HasManyGetAssociationsMixin<SearchTracing>;

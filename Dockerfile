@@ -1,11 +1,11 @@
-FROM node:20.18
+FROM node:12.22
 
 WORKDIR /apps
 
 # Update the package lists:
-RUN apt update
+# RUN apt update
 
-RUN apt -y install postgresql-client
+# RUN apt -y install postgresql-client
 
 COPY dist .
 
