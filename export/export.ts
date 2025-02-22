@@ -304,7 +304,7 @@ function swcHeader(sample: Sample, mouse: MouseStrain, virus: InjectionVirus, fl
 
     if (soma) {
         const somaBrainArea = isCcfv3 ? brainAreaMap.get(soma.brainAreaIdCcfV30) : brainAreaMap.get(soma.brainAreaIdCcfV25);
-        header += `# Soma Compartment Id:\t\t   ${somaBrainArea?.structureId} (${somaBrainArea?.name ?? "unknown"})\n`;
+        header += `# Soma Compartment Id:\t\t   ${somaBrainArea?.structureId} (${somaBrainArea?.name ?? "null"})\n`;
     }
 
     if (neuron.annotationMetadata) {
@@ -314,13 +314,13 @@ function swcHeader(sample: Sample, mouse: MouseStrain, virus: InjectionVirus, fl
             if (annotationObj?.manualAnnotations) {
                 if (annotationObj.manualAnnotations.curatedCompartmentId) {
                     const compartment = brainAreaStructureIdMap.get(annotationObj.manualAnnotations.curatedCompartmentId);
-                    header += `# Curated Soma Compartment Id: ${annotationObj.manualAnnotations.curatedCompartmentId} (${compartment?.name ?? "unknown"})\n`;
+                    header += `# Curated Soma Compartment Id: ${annotationObj.manualAnnotations.curatedCompartmentId} (${compartment?.name ?? "null"})\n`;
                 }
 
-                const legacy = annotationObj.manualAnnotations.legacyCompartmentIds;
+                const legacy = annotationObj.manualAnnotations.legacyCompartmentIds.filter(id => id && id.trim().length > 0);
 
                 if (legacy && legacy.length > 0) {
-                    const names = legacy.map(id => brainAreaStructureIdMap.get(id)?.name ?? "unknown");
+                    const names = legacy.map(id => brainAreaStructureIdMap.get(id)?.name ?? id);
                     header += `# Legacy Soma Compartment Ids: ${legacy.join(", ")} (${names.join(", ")})\n`;
                 }
 
